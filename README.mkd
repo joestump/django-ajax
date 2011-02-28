@@ -1,0 +1,62 @@
+# Overview
+
+This package creates a minimal framework for creating AJAX endpoints of your own in Django without having to create all of the mappings, handling errors, building JSON, etc.
+
+Additionally, this package allows you to create AJAX endpoints for manipulating Django models directly from JavaScript without much effort. This feature works in a similar manner to Django's `ModelAdmin` feature in `admin.py`.
+
+# Install
+
+1. Install the `ajax/` directory as you would any other application in your Django project or put it in your Django project's `sys.path` somewhere. 
+2. Add `ajax` to `INSTALLED_APPS` in your `settings.py`.
+3. In your Django project's `urls.py` add `(r'^ajax/', include('ajax.urls'))`.
+
+There are no models associated with this package so you don't need to worry about syncing your database or anything.
+
+# Usage
+
+You can use this package to create ad-hoc AJAX endpoints or by exposing your Django applications's models via AJAX.
+
+1. `/ajax/{some_app_name}/{some_endpoint}.json` is treated as an ad-hoc AJAX endpoint and will be mapped to `some_app_name.endpoints.some_endpoint`. The function `some_endpoint` must return a `dict` or an `HttpResponse` of some sort. When a `dict` is returned, it is serialized as JSON and packaged up nicely for the client.
+2. `/ajax/{some_app_name}/{model}/(create|update|delete|get).json` will attempt to load up an instance of `ModelEndpoint` for the given model and then run the given manipulation.
+
+All of your AJAX endpoints should be put into a file called `endpoints.py` in your Django applications. AJAX will handle all of the rest of the magic.
+
+## Ad-Hoc Endpoint
+
+The following is a simple example of an AJAX endpoint that just echo's back the POST. Keep in mind that ad-hoc AJAX endpoints basically work like regular Django views in that they get a `request` object. All of the usual view decorators can be used here without issue (e.g. `login_required`). The only thing to keep in mind is that views *only* get `request` as an argument and *must* return a `dict` or `HttpResponse`.
+
+    from ajax import AJAXErrorr
+
+    def right_back_at_you(request):
+        if len(request.POST):
+            return request.POST
+        else:
+            raise AJAXError(500, 'Nothing to echo back.')
+
+If you're surfacing a known error, it's best to use `AJAXError` with a sane error code and a message. All other exceptions will be returned as a 500 with a generic error message. 
+
+From JavaScript you can easily access the endpoint using jQuery.
+
+    $.post('/ajax/my_app/right_back_at_you.json', {
+        name: "Joe Stump",
+        age: 31
+    });
+
+## Model Endpoint
+
+AJAX also offers a class, called `ModelEndpoint`, that takes a Django model and exposes ways to manipulate it via AJAX.
+
+    import ajax
+    from my_app.models import Category
+    
+    class CategoryEndpoint(ajax.ModelEndpoint):
+        pass
+
+    ajax.endpoint.register(Category, CategoryEndpoint)
+
+You can then send a POST to:
+
+* `/ajax/my_app/category/create.json` to create a new `Category`.
+* `/ajax/my_app/category/update.json` to update a `Category`. You must pass `pk` with it's appropriate ID in the POST arguments. `pk` must be present for `update`, `delete`, and `get`.
+* `/ajax/my_app/category/get.json` to get a given `Category`.
+* `/ajax/my_app/category/delete.json` to delete a given `Category`.

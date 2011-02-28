@@ -1,7 +1,8 @@
 from django.forms.models import model_to_dict
 from django.utils import simplejson as json
 from django.http import HttpResponse, HttpResponseNotFound, \
-    HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseServerError
+    HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseServerError, \
+    HttpResponseBadRequest
 from decorator import decorator 
 
 class AlreadyRegistered(Exception):
@@ -15,6 +16,7 @@ class PrimaryKeyMissing(Exception):
 
 class AJAXError(Exception):
     RESPONSES = {
+        400: HttpResponseBadRequest,
         403: HttpResponseForbidden,
         404: HttpResponseNotFound,
         405: HttpResponseNotAllowed,
