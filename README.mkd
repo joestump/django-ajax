@@ -17,7 +17,8 @@ There are no models associated with this package so you don't need to worry abou
 You can use this package to create ad-hoc AJAX endpoints or by exposing your Django applications's models via AJAX.
 
 1. `/ajax/{some_app_name}/{some_endpoint}.json` is treated as an ad-hoc AJAX endpoint and will be mapped to `some_app_name.endpoints.some_endpoint`. The function `some_endpoint` must return a `dict` or an `HttpResponse` of some sort. When a `dict` is returned, it is serialized as JSON and packaged up nicely for the client.
-2. `/ajax/{some_app_name}/{model}/(create|update|delete|get).json` will attempt to load up an instance of `ModelEndpoint` for the given model and then run the given manipulation.
+2. `/ajax/{some_app_name}/{model}.json` will attempt to load up an instance of `ModelEndpoint` for the given model and run an append operation to create a new record for the given model.
+3. `/ajax/{some_app_name}/{model}/{pk}/(update|delete|get).json` will attempt to load up an instance of `ModelEndpoint` for the given model and run the given operation for the record specified by `pk`.
 
 All of your AJAX endpoints should be put into a file called `endpoints.py` in your Django applications. AJAX will handle all of the rest of the magic.
 
@@ -56,7 +57,7 @@ AJAX also offers a class, called `ModelEndpoint`, that takes a Django model and 
 
 You can then send a POST to:
 
-* `/ajax/my_app/category/create.json` to create a new `Category`.
-* `/ajax/my_app/category/update.json` to update a `Category`. You must pass `pk` with it's appropriate ID in the POST arguments. `pk` must be present for `update`, `delete`, and `get`.
-* `/ajax/my_app/category/get.json` to get a given `Category`.
-* `/ajax/my_app/category/delete.json` to delete a given `Category`.
+* `/ajax/my_app/category.json` to create a new `Category`.
+* `/ajax/my_app/category/{pk}/update.json` to update a `Category`. `pk` must be present in the path for `update`, `delete`, and `get`. **NOTE:** This package assumes that the `pk` argument is an integer of some sort. If you've mangled your `pk` fields in weird ways, this likely will not work as expected.
+* `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
+* `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
