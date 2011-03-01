@@ -1,5 +1,6 @@
 from django.forms.models import model_to_dict
 from django.utils import simplejson as json
+from django.utils.encoding import smart_str
 from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseServerError, \
     HttpResponseBadRequest
@@ -39,66 +40,69 @@ class AJAXError(Exception):
 
 @decorator
 def require_pk(func, *args, **kwargs):
-    if 'pk' not in args[0].request.POST:
+    if not hasattr(args[0], 'pk') or args[0].pk == None:
         raise PrimaryKeyMissing()
 
 class ModelEndpoint(object):
-    def __init__(self, model, request):
+    def __init__(self, application, model, method, pk):
+        self.application = application
         self.model = model
-        self.request = request
+        self.method = method
+        self.pk = pk
 
-    def create(self):
-        record = self.model(**self._extract_data())
-        if self.can_create(self.request.user):
+    def create(self, request):
+        record = self.model(**self._extract_data(request))
+        if self.can_create(request.user):
             record.save()
-            return {'pk': record.pk}
-        else:
-            return HttpResponseForbidden()
-
-    @require_pk
-    def update(self):
-        record = self.model(pk=self.request.POST['pk'])
-        if self.can_edit(self.request.user, record):
-            data = self._extract_data()
             return model_to_dict(record)
         else:
             return HttpResponseForbidden()
 
     @require_pk
-    def delete(self):
-        record = self.model(pk=self.request.POST['pk'])
-        if self.can_edit(self.request.user, record):
+    def update(self, request):
+        record = self.model(pk=self.pk)
+        if self.can_update(request.user, record):
+            data = self._extract_data(request)
+            return model_to_dict(record)
+        else:
+            return HttpResponseForbidden()
+
+    @require_pk
+    def delete(self, request):
+        record = self.model(pk=self.pk)
+        if self.can_delete(request.user, record):
             record.delete()
-            return {'pk': self.request.POST['pk']}
+            return {'pk': self.pk}
         else:
             return HttpResponseForbidden()
 
     @require_pk
-    def get(self):
-        record = self.model(pk=self.request.POST['pk'])
-        if self.can_read(self.request.user, record):
+    def get(self, request):
+        record = self.model(pk=self.pk)
+        if self.can_get(request.user, record):
             return model_to_dict(record)
         else:
             return HttpResponseForbidden()
 
-    def _extract_data(self):
+    def _extract_data(self, request):
         data = {}
-        for field, val in self.request.POST.iteritems():
-            if hasattr(self.model, field):
-                data[field] = val
+        for field, val in request.POST.iteritems():
+            if field in self.model._meta.get_all_field_names():
+                data[smart_str(field)] = val
 
-        return data       
+        return data
 
-    def can_edit(self, user, record):
+    def can_get(self, user, record):
         return True
 
-    def can_read(self, user, record):
-        return True
+    def _user_is_active_or_staff(self, user):
+        return ((user.is_authenticated() and user.is_active) or user.is_staff)
 
-    def can_create(self, user):
-        return True
+    can_create = _user_is_active_or_staff
+    can_edit = _user_is_active_or_staff
+    can_delete = _user_is_active_or_staff
 
-    def authenticate(self, method):
+    def authenticate(self, request, application, method):
         """Authenticate the AJAX request.
 
         By default any request to fetch a model is allowed for any user, 
@@ -108,11 +112,7 @@ class ModelEndpoint(object):
         Most likely you will want to lock down who can edit and delete various
         models. To do this, just override this method in your child class. 
         """
-
-        if method == "get":
-            return True
-
-        if self.request.user.is_authenticated():
+        if request.user.is_authenticated():
             return True
             
         return False
@@ -133,10 +133,10 @@ class Endpoints(object):
 
         del self._registry[model]
 
-    def load(self, model_name, request):
+    def load(self, model_name, application, method, pk):
         for model in self._registry:
             if model.__name__.lower() == model_name:
-                return self._registry[model](model, request)
+                return self._registry[model](application, model, method, pk)
 
         raise NotRegistered()
 
