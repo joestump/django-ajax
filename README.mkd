@@ -64,6 +64,8 @@ You can then send a POST to:
 
 # Security
 
+There are a number of ways to lock down your ad-hoc and model endpoints. You can use the decorator(s) outlined below as well as throwing appropriate `AJAXError` exceptions from your ad-hoc endpoints. Of course, all exceptions raised and `HttpResponse` objects returned are respected by default. For model endpoints you can, additionally, use `can_create()`, `can_update()`, `can_delete()`, `can_get()`, and `authenticate()` to lock down various operations on the given model.
+
 ## Decorators
 
 The AJAX package offers a familiar decorator in `ajax.decorators` called `login_required`. It works in the same way that the Django decorator does and handles throwing a proper `AJAXError` if the user isn't logged in.
@@ -76,25 +78,25 @@ The AJAX package offers a familiar decorator in `ajax.decorators` called `login_
             'Hello, %s!' % request.user.username
         }
 
-## `ModelEndpoint`
+## ModelEndpoint
 
 The `ModelEndpoint` class offers a number of methods that you can override to add more advanced security over your model-based enpoints. You can override these in your model-based endpoints to control who is able to access each model and in what manner.
 
-### `(bool) ModelEndpoint.can_create(user)`
+### (bool) ModelEndpoint.can_create(user)
 
-Returns `True` if the user can create a new record using the given model.
+Returns `True` if the `user` can create a new `record` using the given model.
 
-### `(bool) ModelEndpoint.can_update(user, record)`
+### (bool) ModelEndpoint.can_update(user, record)
 
-Returns `True` if the user can update the given record.
+Returns `True` if the `user` can update the given `record`.
 
-### `(bool) ModelEndpoint.can_delete(user, record)`
+### (bool) ModelEndpoint.can_delete(user, record)
 
-Returns `True` if the user can delete the given record.
+Returns `True` if the `user` can delete the given `record`.
 
-### `(bool) ModelEndpoint.can_get(user, record)`
+### (bool) ModelEndpoint.can_get(user, record)
 
-Returns `True` if the user can fetch the given record.
+Returns `True` if the `user` can fetch the given `record`.
 
 ### `(bool) ModelEndpoint.authenticate(request, application, method)`
 
