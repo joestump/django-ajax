@@ -74,7 +74,7 @@ class ModelEndpoint(object):
         record = self._get_record()
         if self.can_delete(request.user, record):
             record.delete()
-            return {'pk': self.pk}
+            return {'pk': int(self.pk)}
         else:
             return HttpResponseForbidden()
 
@@ -99,8 +99,7 @@ class ModelEndpoint(object):
             raise AJAXError(400, _('Invalid request for record.'))
 
         try:
-            record = self.model(pk=self.pk)
-            return record
+            return self.model.objects.get(pk=self.pk)
         except self.model.DoesNotExist:
             raise AJAXError(404, _('Record "%s" not found.') % self.pk)
 
