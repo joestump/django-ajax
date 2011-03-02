@@ -98,6 +98,6 @@ Returns `True` if the `user` can delete the given `record`.
 
 Returns `True` if the `user` can fetch the given `record`.
 
-### `(bool) ModelEndpoint.authenticate(request, application, method)`
+### (bool) ModelEndpoint.authenticate(request, application, method)
 
 This method is ran before any other security-related operations. This method allows you to control overall authentication-related access prior to any of the `can_*` methods being ran and before any model operations are executed. It is ran regardless of the operation being attempted.
