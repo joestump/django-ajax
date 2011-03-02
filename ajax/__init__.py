@@ -43,6 +43,8 @@ def require_pk(func, *args, **kwargs):
     if not hasattr(args[0], 'pk') or args[0].pk == None:
         raise PrimaryKeyMissing()
 
+    return func(*args, **kwargs)
+
 class ModelEndpoint(object):
     def __init__(self, application, model, method, pk):
         self.application = application
@@ -60,7 +62,7 @@ class ModelEndpoint(object):
 
     @require_pk
     def update(self, request):
-        record = self.model(pk=self.pk)
+        record = self._get_record()
         if self.can_update(request.user, record):
             data = self._extract_data(request)
             return model_to_dict(record)
@@ -69,7 +71,7 @@ class ModelEndpoint(object):
 
     @require_pk
     def delete(self, request):
-        record = self.model(pk=self.pk)
+        record = self._get_record()
         if self.can_delete(request.user, record):
             record.delete()
             return {'pk': self.pk}
@@ -78,7 +80,7 @@ class ModelEndpoint(object):
 
     @require_pk
     def get(self, request):
-        record = self.model(pk=self.pk)
+        record = self._get_record()
         if self.can_get(request.user, record):
             return model_to_dict(record)
         else:
@@ -92,10 +94,20 @@ class ModelEndpoint(object):
 
         return data
 
+    def _get_record(self):
+        if not self.pk:
+            raise AJAXError(400, _('Invalid request for record.'))
+
+        try:
+            record = self.model(pk=self.pk)
+            return record
+        except self.model.DoesNotExist:
+            raise AJAXError(404, _('Record "%s" not found.') % self.pk)
+
     def can_get(self, user, record):
         return True
 
-    def _user_is_active_or_staff(self, user):
+    def _user_is_active_or_staff(self, user, record=None):
         return ((user.is_authenticated() and user.is_active) or user.is_staff)
 
     can_create = _user_is_active_or_staff
