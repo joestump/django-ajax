@@ -101,3 +101,8 @@ Returns `True` if the `user` can fetch the given `record`.
 ### (bool) ModelEndpoint.authenticate(request, application, method)
 
 This method is ran before any other security-related operations. This method allows you to control overall authentication-related access prior to any of the `can_*` methods being ran and before any model operations are executed. It is ran regardless of the operation being attempted.
+
+# Todo
+
+1. In `ModelEndpoint` modify `_extract_data()` to automatically recognize `ForeignKey` fields and convert the value provided in `request.POST` to `pk` for the given `ForeignKey`. This will allow people to provide a `pk` in `request.POST` without having to load the object itself.
+2. Create a JavaScript client that extends jQuery and exposes shortcuts for interfacing with `django-ajax`.

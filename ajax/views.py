@@ -35,7 +35,7 @@ def json_response(f, *args, **kwargs):
     return result
 
 
-@ajax_response
+@json_response
 def endpoint_loader(request, application, model, **kwargs):
     """Load an AJAX endpoint.
 

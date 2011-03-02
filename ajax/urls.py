@@ -1,7 +1,12 @@
 from django.conf.urls.defaults import *
+from django.views.static import serve
+import os
 
-#    (r'^(?P<application>\w+)/(?P<endpoint>[a-z_]+).json$', 'endpoint_loader'),
+JAVASCRIPT_PATH = "%s/js" % os.path.dirname(__file__)
+
 urlpatterns = patterns('ajax.views',
     (r'^(?P<application>\w+)/(?P<model>\w+).json', 'endpoint_loader'), 
     (r'^(?P<application>\w+)/(?P<model>\w+)/(?P<pk>\d+)/(?P<method>(update|delete|get)).json$', 'endpoint_loader'),
+    (r'^js/(?P<path>.*)$', serve,
+        {'document_root': JAVASCRIPT_PATH}),
 )
