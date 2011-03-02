@@ -64,7 +64,10 @@ class ModelEndpoint(object):
     def update(self, request):
         record = self._get_record()
         if self.can_update(request.user, record):
-            data = self._extract_data(request)
+            for key, val in self._extract_data(request).iteritems():
+                setattr(record, key, val)
+
+            record.save()
             return model_to_dict(record)
         else:
             return HttpResponseForbidden()
@@ -110,7 +113,7 @@ class ModelEndpoint(object):
         return ((user.is_authenticated() and user.is_active) or user.is_staff)
 
     can_create = _user_is_active_or_staff
-    can_edit = _user_is_active_or_staff
+    can_update = _user_is_active_or_staff
     can_delete = _user_is_active_or_staff
 
     def authenticate(self, request, application, method):
