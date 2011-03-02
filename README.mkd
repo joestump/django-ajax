@@ -61,3 +61,41 @@ You can then send a POST to:
 * `/ajax/my_app/category/{pk}/update.json` to update a `Category`. `pk` must be present in the path for `update`, `delete`, and `get`. **NOTE:** This package assumes that the `pk` argument is an integer of some sort. If you've mangled your `pk` fields in weird ways, this likely will not work as expected.
 * `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
 * `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
+
+# Security
+
+## Decorators
+
+The AJAX package offers a familiar decorator in `ajax.decorators` called `login_required`. It works in the same way that the Django decorator does and handles throwing a proper `AJAXError` if the user isn't logged in.
+
+    from ajax.decorators import login_required
+
+    @login_required
+    def my_ajax_endpoint(request):
+        return {
+            'Hello, %s!' % request.user.username
+        }
+
+## `ModelEndpoint`
+
+The `ModelEndpoint` class offers a number of methods that you can override to add more advanced security over your model-based enpoints. You can override these in your model-based endpoints to control who is able to access each model and in what manner.
+
+### `(bool) ModelEndpoint.can_create(user)`
+
+Returns `True` if the user can create a new record using the given model.
+
+### `(bool) ModelEndpoint.can_update(user, record)`
+
+Returns `True` if the user can update the given record.
+
+### `(bool) ModelEndpoint.can_delete(user, record)`
+
+Returns `True` if the user can delete the given record.
+
+### `(bool) ModelEndpoint.can_get(user, record)`
+
+Returns `True` if the user can fetch the given record.
+
+### `(bool) ModelEndpoint.authenticate(request, application, method)`
+
+This method is ran before any other security-related operations. This method allows you to control overall authentication-related access prior to any of the `can_*` methods being ran and before any model operations are executed. It is ran regardless of the operation being attempted.
