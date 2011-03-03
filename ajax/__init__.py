@@ -143,7 +143,19 @@ class ModelEndpoint(object):
                 f = self.model._meta.get_field(field)
                 if isinstance(f, models.ForeignKey):
                     row = f.rel.to.objects.get(pk=val)
-                    data[smart_str(field)] = self._encode_record(row)
+                    new_value = self._encode_record(row)
+                elif isinstance(f, models.BooleanField):
+                    # If someone could explain to me why the fuck the Python
+                    # serializer appears to serialize BooleanField to a string
+                    # with "True" or "False" in it, please let me know.
+                    if val == "True":
+                        new_value = True
+                    else:
+                        new_value = False
+                else:
+                    new_value = val
+
+                data[smart_str(field)] = new_value
             except FieldDoesNotExist:
                 pass
 
