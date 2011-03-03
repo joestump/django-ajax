@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
+from django.core.serializers.json import DjangoJSONEncoder
 from decorator import decorator
 import ajax
 
@@ -71,4 +72,4 @@ def endpoint_loader(request, application, model, **kwargs):
     if isinstance(data, HttpResponse):
         return data 
     else:
-        return HttpResponse(json.dumps(data, indent=4))
+        return HttpResponse(json.dumps(data, indent=4, cls=DjangoJSONEncoder))

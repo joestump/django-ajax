@@ -1,4 +1,5 @@
-from django.forms.models import model_to_dict
+from django.core import serializers
+from django.db import models
 from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.http import HttpResponse, HttpResponseNotFound, \
@@ -56,7 +57,7 @@ class ModelEndpoint(object):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user):
             record.save()
-            return model_to_dict(record)
+            return self._encode_record(record)
         else:
             return HttpResponseForbidden()
 
@@ -68,7 +69,7 @@ class ModelEndpoint(object):
                 setattr(record, key, val)
 
             record.save()
-            return model_to_dict(record)
+            return self._encode_record(record)
         else:
             return HttpResponseForbidden()
 
@@ -85,17 +86,36 @@ class ModelEndpoint(object):
     def get(self, request):
         record = self._get_record()
         if self.can_get(request.user, record):
-            return model_to_dict(record)
+            return self._encode_record(record)
         else:
             return HttpResponseForbidden()
 
     def _extract_data(self, request):
         data = {}
         for field, val in request.POST.iteritems():
-            if field in self.model._meta.get_all_field_names():
-                data[smart_str(field)] = val
+            try:
+                f = self.model._meta.get_field(field)
+                if isinstance(f, models.ForeignKey):
+                    data[smart_str(field)] = f.rel.to.objects.get(pk=val)
+                else:
+                    data[smart_str(field)] = val
+            except FieldDoesNotExist:
+                pass
 
         return data
+
+    def _encode_data(self, data):
+        data = serializers.serialize("python", data)
+        ret = []
+        for d in data:
+            tmp = d['fields']
+            tmp['pk'] = d['pk']
+            ret.append(tmp)
+
+        return ret
+
+    def _encode_record(self, record):
+        return self._encode_data([record])[0]
 
     def _get_record(self):
         if not self.pk:
