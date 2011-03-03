@@ -62,6 +62,14 @@ You can then send a POST to:
 * `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
 * `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
 
+### ForeignKey while Fetching
+
+It should be noted that the AJAX package takes a liberal approach when it comes to instances of `ForeignKey` it finds in model declarations. If a model that has a `ForeignKey` is fetched it will be expanded to the full record, recursively. For instance, if a `ForeignKey` to `User` is in a given model, you will get the *whole* associated `User` record when a row is fetched.
+
+### ForeignKey while Creating
+
+In addition to expanding `ForeignKey` while fetching, they are expanded when creating a record from the data in POST. If a `ForeignKey` to `User` is in a given model, and the field is called `author`, `ModelEndpoint` will detect that and automatically assume that `request.POST['author']` is an appropriate `pk`, instantiate it, and replace it with a full instance of the associated `User` object.
+
 # Security
 
 There are a number of ways to lock down your ad-hoc and model endpoints. You can use the decorator(s) outlined below as well as throwing appropriate `AJAXError` exceptions from your ad-hoc endpoints. Of course, all exceptions raised and `HttpResponse` objects returned are respected by default. For model endpoints you can, additionally, use `can_create()`, `can_update()`, `can_delete()`, `can_get()`, and `authenticate()` to lock down various operations on the given model.
