@@ -2,6 +2,7 @@ from django.core import serializers
 from django.db import models
 from django.utils import simplejson as json
 from django.utils.encoding import smart_str
+from django.db.models.fields import FieldDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseServerError, \
     HttpResponseBadRequest
@@ -91,6 +92,15 @@ class ModelEndpoint(object):
             return HttpResponseForbidden()
 
     def _extract_data(self, request):
+        """Extract data from POST.
+
+        Handles extracting a vanilla Python dict of values that are present
+        in the given model. This also handles instances of ``ForeignKey`` and
+        will convert those to the appropriate object instances from the
+        database. In other words, it will see that user is a ``ForeignKey`` to
+        Django's ``User`` class, assume the value is an appropriate pk, and
+        load up that record.
+        """
         data = {}
         for field, val in request.POST.iteritems():
             try:
@@ -105,6 +115,12 @@ class ModelEndpoint(object):
         return data
 
     def _encode_data(self, data):
+        """Encode a ``QuerySet`` to a Python dict.
+
+        Handles converting a ``QuerySet`` (or something that looks like one) to
+        a more vanilla version of a list of dict's without the extra 
+        inspection-related cruft.
+        """
         data = serializers.serialize("python", data)
         ret = []
         for d in data:
@@ -115,9 +131,30 @@ class ModelEndpoint(object):
         return ret
 
     def _encode_record(self, record):
-        return self._encode_data([record])[0]
+        """Encode a record to a dict.
+
+        This will take a Django model, encode it to a normal Python dict, and
+        then inspect the data for instances of ``ForeignKey`` and convert 
+        those to a dict of the related record.
+        """
+        data = self._encode_data([record])[0]
+        for field, val in data.iteritems():
+            try:
+                f = self.model._meta.get_field(field)
+                if isinstance(f, models.ForeignKey):
+                    row = f.rel.to.objects.get(pk=val)
+                    data[smart_str(field)] = self._encode_record(row)
+            except FieldDoesNotExist:
+                pass
+
+        return data
 
     def _get_record(self):
+        """Fetch a given record.
+
+        Handles fetching a record from the database along with throwing an
+        appropriate instance of ``AJAXError`.
+        """
         if not self.pk:
             raise AJAXError(400, _('Invalid request for record.'))
 
