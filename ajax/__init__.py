@@ -56,7 +56,7 @@ class ModelEndpoint(object):
 
     def create(self, request):
         record = self.model(**self._extract_data(request))
-        if self.can_create(request.user):
+        if self.can_create(request.user, record):
             record.save()
             return self._encode_record(record)
         else:
@@ -178,7 +178,7 @@ class ModelEndpoint(object):
     def can_get(self, user, record):
         return True
 
-    def _user_is_active_or_staff(self, user, record=None):
+    def _user_is_active_or_staff(self, user, record):
         return ((user.is_authenticated() and user.is_active) or user.is_staff)
 
     can_create = _user_is_active_or_staff
