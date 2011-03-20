@@ -1,8 +1,10 @@
 from django.http import HttpResponse
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
+from django.utils.importlib import import_module
 from django.core.serializers.json import DjangoJSONEncoder
 from decorator import decorator
+from ajax.exceptions import AJAXError, NotRegistered
 import ajax
 
 
@@ -23,14 +25,14 @@ def json_response(f, *args, **kwargs):
     }
 
     Please keep in mind that raw exception messages could very well be exposed
-    to the client if a non-ajax.AJAXError is thrown.
+    to the client if a non-AJAXError is thrown.
     """ 
     try:
         result = f(*args, **kwargs)
-    except ajax.AJAXError, e:
+    except AJAXError, e:
         result = e.get_response()
     except Exception, e:
-        result = ajax.AJAXError(500, str(e)).get_response()
+        result = AJAXError(500, str(e)).get_response()
 
     result['Content-Type'] = 'application/json'
     return result
@@ -46,10 +48,9 @@ def endpoint_loader(request, application, model, **kwargs):
     there is a ``ModelEndpoint`` for the given ``model``.
     """
     try:
-        module = __import__('%s.endpoints' % application, globals(), 
-            locals(), [model], -1)
+        module = import_module('%s.endpoints' % application)
     except ImportError, e:
-        raise ajax.AJAXError(404, _('AJAX endpoint does not exist.'))
+        raise AJAXError(404, _('AJAX endpoint does not exist.'))
 
     if hasattr(module, model):
         # This is an ad-hoc endpoint
@@ -62,11 +63,11 @@ def endpoint_loader(request, application, model, **kwargs):
         try:
             model_endpoint = ajax.endpoint.load(model, application, method, pk)
             if not model_endpoint.authenticate(request, application, method):
-                raise ajax.AJAXError(403, _('User is not authorized.'))
+                raise AJAXError(403, _('User is not authorized.'))
 
             endpoint = getattr(model_endpoint, method)
-        except ajax.NotRegistered:
-            raise ajax.AJAXError(500, _('Invalid model.'))       
+        except NotRegistered:
+            raise AJAXError(500, _('Invalid model.'))       
 
     data = endpoint(request) 
     if isinstance(data, HttpResponse):
