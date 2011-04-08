@@ -3,16 +3,35 @@ from django.db import models
 from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.db.models.fields import FieldDoesNotExist
+from django.http import Http404
 from ajax.decorators import require_pk
 
 
-class ModelEndpoint(object):
+class BaseEndpoint(object):
     def __init__(self, application, model, method, pk):
         self.application = application
         self.model = model
         self.method = method
         self.pk = pk
 
+    def _encode_data(self, data):
+        """Encode a ``QuerySet`` to a Python dict.
+
+        Handles converting a ``QuerySet`` (or something that looks like one) to
+        a more vanilla version of a list of dict's without the extra 
+        inspection-related cruft.
+        """
+        data = serializers.serialize("python", data)
+        ret = []
+        for d in data:
+            tmp = d['fields']
+            tmp['pk'] = d['pk']
+            ret.append(tmp)
+
+        return ret
+
+
+class ModelEndpoint(BaseEndpoint):
     def create(self, request):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user, record):
@@ -73,21 +92,6 @@ class ModelEndpoint(object):
 
         return data
 
-    def _encode_data(self, data):
-        """Encode a ``QuerySet`` to a Python dict.
-
-        Handles converting a ``QuerySet`` (or something that looks like one) to
-        a more vanilla version of a list of dict's without the extra 
-        inspection-related cruft.
-        """
-        data = serializers.serialize("python", data)
-        ret = []
-        for d in data:
-            tmp = d['fields']
-            tmp['pk'] = d['pk']
-            ret.append(tmp)
-
-        return ret
 
     def _encode_record(self, record):
         """Encode a record to a dict.
@@ -156,8 +160,26 @@ class ModelEndpoint(object):
         """
         if request.user.is_authenticated():
             return True
-            
+
         return False
+
+
+class FormEndpoint(BaseEndpoint):
+    """AJAX endpoint for processing Django forms.
+
+    The models and forms are processed in pretty much the same manner, only a
+    form class is used rather than a model class.
+    """
+    def create(self, request):
+        form = self.model(request.POST)
+        if form.is_valid():
+            form.save()
+        else:
+            return self._encode_data(form.errors)
+
+    update = lambda self, request: return Http404()
+    delete = lambda self, request: return Http404()
+    get = lambda self, request: return Http404()
 
 
 class Endpoints(object):
@@ -172,7 +194,7 @@ class Endpoints(object):
 
     def unregister(self, model):
         if model not in self._registry:
-            raise NotRegistered()        
+            raise NotRegistered()
 
         del self._registry[model]
 

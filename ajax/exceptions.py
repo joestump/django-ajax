@@ -18,7 +18,7 @@ class AJAXError(Exception):
         403: HttpResponseForbidden,
         404: HttpResponseNotFound,
         405: HttpResponseNotAllowed,
-        500: HttpResponseServerError,         
+        500: HttpResponseServerError,
     }
 
     def __init__(self, code, msg):

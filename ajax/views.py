@@ -47,6 +47,9 @@ def endpoint_loader(request, application, model, **kwargs):
     as if it were an ad-hoc endpoint. Alternatively, it will attempt to see if
     there is a ``ModelEndpoint`` for the given ``model``.
     """
+    if request.method == "POST":
+        raise AJAXError(400, _('Invalid HTTP method used.'))
+
     try:
         module = import_module('%s.endpoints' % application)
     except ImportError, e:
@@ -67,10 +70,10 @@ def endpoint_loader(request, application, model, **kwargs):
 
             endpoint = getattr(model_endpoint, method)
         except NotRegistered:
-            raise AJAXError(500, _('Invalid model.'))       
+            raise AJAXError(500, _('Invalid model.'))
 
-    data = endpoint(request) 
+    data = endpoint(request)
     if isinstance(data, HttpResponse):
-        return data 
+        return data
     else:
         return HttpResponse(json.dumps(data, indent=4, cls=DjangoJSONEncoder))
