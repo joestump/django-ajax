@@ -30,6 +30,37 @@ class BaseEndpoint(object):
 
         return ret
 
+    def _encode_record(self, record):
+        """Encode a record to a dict.
+
+        This will take a Django model, encode it to a normal Python dict, and
+        then inspect the data for instances of ``ForeignKey`` and convert 
+        those to a dict of the related record.
+        """
+        data = self._encode_data([record])[0]
+        for field, val in data.iteritems():
+            try:
+                f = self.model._meta.get_field(field)
+                if isinstance(f, models.ForeignKey):
+                    row = f.rel.to.objects.get(pk=val)
+                    new_value = self._encode_record(row)
+                elif isinstance(f, models.BooleanField):
+                    # If someone could explain to me why the fuck the Python
+                    # serializer appears to serialize BooleanField to a string
+                    # with "True" or "False" in it, please let me know.
+                    if val == "True":
+                        new_value = True
+                    else:
+                        new_value = False
+                else:
+                    new_value = val
+
+                data[smart_str(field)] = new_value
+            except FieldDoesNotExist:
+                pass
+
+        return data
+
 
 class ModelEndpoint(BaseEndpoint):
     def create(self, request):
@@ -92,38 +123,6 @@ class ModelEndpoint(BaseEndpoint):
 
         return data
 
-
-    def _encode_record(self, record):
-        """Encode a record to a dict.
-
-        This will take a Django model, encode it to a normal Python dict, and
-        then inspect the data for instances of ``ForeignKey`` and convert 
-        those to a dict of the related record.
-        """
-        data = self._encode_data([record])[0]
-        for field, val in data.iteritems():
-            try:
-                f = self.model._meta.get_field(field)
-                if isinstance(f, models.ForeignKey):
-                    row = f.rel.to.objects.get(pk=val)
-                    new_value = self._encode_record(row)
-                elif isinstance(f, models.BooleanField):
-                    # If someone could explain to me why the fuck the Python
-                    # serializer appears to serialize BooleanField to a string
-                    # with "True" or "False" in it, please let me know.
-                    if val == "True":
-                        new_value = True
-                    else:
-                        new_value = False
-                else:
-                    new_value = val
-
-                data[smart_str(field)] = new_value
-            except FieldDoesNotExist:
-                pass
-
-        return data
-
     def _get_record(self):
         """Fetch a given record.
 
@@ -173,7 +172,13 @@ class FormEndpoint(BaseEndpoint):
     def create(self, request):
         form = self.model(request.POST)
         if form.is_valid():
-            form.save()
+            model = form.save()
+            if hasattr(model, 'save'):
+                # This is a model form so we save it and return the model.
+                model.save()
+                return self._encode_record(model)
+            else:
+                return model  # Assume this is a dict to encode.
         else:
             return self._encode_data(form.errors)
 
