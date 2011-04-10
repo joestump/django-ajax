@@ -3,7 +3,7 @@ from django.db import models
 from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.db.models.fields import FieldDoesNotExist
-from django.http import Http404
+from django.http import HttpResponseNotFound
 from ajax.decorators import require_pk
 
 
@@ -182,9 +182,9 @@ class FormEndpoint(BaseEndpoint):
         else:
             return self._encode_data(form.errors)
 
-    update = lambda self, request: return Http404()
-    delete = lambda self, request: return Http404()
-    get = lambda self, request: return Http404()
+    update = lambda self, request: HttpResponseNotFound()
+    delete = lambda self, request: HttpResponseNotFound()
+    get = lambda self, request: HttpResponseNotFound()
 
 
 class Endpoints(object):
