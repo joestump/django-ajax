@@ -2,9 +2,11 @@ from django.core import serializers
 from django.db import models
 from django.utils import simplejson as json
 from django.utils.encoding import smart_str
+from django.utils.translation import ugettext_lazy as _
 from django.db.models.fields import FieldDoesNotExist
-from django.http import HttpResponseNotFound
 from ajax.decorators import require_pk
+from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
+    PrimaryKeyMissing
 
 
 class BaseEndpoint(object):
@@ -69,7 +71,7 @@ class ModelEndpoint(BaseEndpoint):
             record.save()
             return self._encode_record(record)
         else:
-            return HttpResponseForbidden()
+            raise AJAXError(403, _("Access to endpoint is forbidden"))
 
     @require_pk
     def update(self, request):
@@ -81,7 +83,7 @@ class ModelEndpoint(BaseEndpoint):
             record.save()
             return self._encode_record(record)
         else:
-            return HttpResponseForbidden()
+            raise AJAXError(403, _("Access to endpoint is forbidden"))
 
     @require_pk
     def delete(self, request):
@@ -90,7 +92,7 @@ class ModelEndpoint(BaseEndpoint):
             record.delete()
             return {'pk': int(self.pk)}
         else:
-            return HttpResponseForbidden()
+            raise AJAXError(403, _("Access to endpoint is forbidden"))
 
     @require_pk
     def get(self, request):
@@ -98,7 +100,7 @@ class ModelEndpoint(BaseEndpoint):
         if self.can_get(request.user, record):
             return self._encode_record(record)
         else:
-            return HttpResponseForbidden()
+            raise AJAXError(403, _("Access to endpoint is forbidden"))
 
     def _extract_data(self, request):
         """Extract data from POST.
@@ -135,7 +137,8 @@ class ModelEndpoint(BaseEndpoint):
         try:
             return self.model.objects.get(pk=self.pk)
         except self.model.DoesNotExist:
-            raise AJAXError(404, _('Record "%s" not found.') % self.pk)
+            raise AJAXError(404, _('%s with id of "%s" not found.') % (
+                self.model.__name__, self.pk))
 
     def can_get(self, user, record):
         return True
@@ -182,9 +185,11 @@ class FormEndpoint(BaseEndpoint):
         else:
             return self._encode_data(form.errors)
 
-    update = lambda self, request: HttpResponseNotFound()
-    delete = lambda self, request: HttpResponseNotFound()
-    get = lambda self, request: HttpResponseNotFound()
+    def update(self, request):
+        raise AJAXError(404, _("Endpoint does not exist."))
+
+    delete = update
+    get = update
 
 
 class Endpoints(object):
