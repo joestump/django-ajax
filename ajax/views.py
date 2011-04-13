@@ -3,6 +3,7 @@ from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
 from django.utils.importlib import import_module
 from django.core.serializers.json import DjangoJSONEncoder
+from django.conf import settings
 from decorator import decorator
 from ajax.exceptions import AJAXError, NotRegistered
 import ajax
@@ -53,6 +54,10 @@ def endpoint_loader(request, application, model, **kwargs):
     try:
         module = import_module('%s.endpoints' % application)
     except ImportError, e:
+        if settings.DEBUG:
+            import traceback
+            print traceback.print_exc()
+
         raise AJAXError(404, _('AJAX endpoint does not exist.'))
 
     if hasattr(module, model):
