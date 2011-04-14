@@ -44,8 +44,11 @@ class BaseEndpoint(object):
             try:
                 f = self.model._meta.get_field(field)
                 if isinstance(f, models.ForeignKey):
-                    row = f.rel.to.objects.get(pk=val)
-                    new_value = self._encode_record(row)
+                    try:
+                        row = f.rel.to.objects.get(pk=val)
+                        new_value = self._encode_record(row)
+                    except f.rel.to.DoesNotExist:
+                        new_value = {}  # If it's not there add empty dict.
                 elif isinstance(f, models.BooleanField):
                     # If someone could explain to me why the fuck the Python
                     # serializer appears to serialize BooleanField to a string
