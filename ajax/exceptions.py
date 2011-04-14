@@ -22,15 +22,17 @@ class AJAXError(Exception):
         500: HttpResponseServerError,
     }
 
-    def __init__(self, code, msg):
+    def __init__(self, code, msg, **kwargs):
         self.code = code
         self.msg = msg
+        self.extra = kwargs  # Any kwargs will be appended to the output.
 
     def get_response(self):
         error = {
             'code': self.code,
             'message': smart_str(self.msg)
         }
+        error.update(self.extra)
 
         response = self.RESPONSES[self.code]()
         response.content = json.dumps(error, indent=4)

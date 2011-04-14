@@ -33,7 +33,14 @@ def json_response(f, *args, **kwargs):
     except AJAXError, e:
         result = e.get_response()
     except Exception, e:
-        result = AJAXError(500, str(e)).get_response()
+        if settings.DEBUG:
+            import sys
+            import traceback 
+            type, message, trace = sys.exc_info()
+            tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for l in traceback.extract_tb(trace)]
+            result = AJAXError(500, message, traceback=tb).get_response()
+        elese:
+            result = AJAXError(500, message).get_response()
 
     result['Content-Type'] = 'application/json'
     return result
