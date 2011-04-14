@@ -71,10 +71,17 @@ class ModelEndpoint(BaseEndpoint):
     def create(self, request):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user, record):
-            record.save()
-            return self._encode_record(record)
+            return self._encode_record(self._save(record))
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
+
+    def _save(self, record):
+        try:
+            record.full_clean()
+            record.save()
+            return record
+        except ValidationError, e:
+            raise AJAXError(400, _("Could not save model."), errors=e.message_dict)
 
     @require_pk
     def update(self, request):
@@ -83,8 +90,7 @@ class ModelEndpoint(BaseEndpoint):
             for key, val in self._extract_data(request).iteritems():
                 setattr(record, key, val)
 
-            record.save()
-            return self._encode_record(record)
+            return self._encode_record(self._save(record))
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
