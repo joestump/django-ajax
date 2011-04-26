@@ -73,7 +73,7 @@ AJAX also offers a class, called `ModelEndpoint`, that takes a Django model and 
     import ajax
     from my_app.models import Category
     
-    class CategoryEndpoint(ajax.ModelEndpoint):
+    class CategoryEndpoint(ajax.endpoints.ModelEndpoint):
         pass
 
     ajax.endpoint.register(Category, CategoryEndpoint)
