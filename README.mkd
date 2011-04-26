@@ -48,7 +48,7 @@ You can also create endpoints from callable objects. The `BaseEndpoint` class ha
 * `BaseEndpoint._encode_data` takes a single argument, `data`, which it assumes to be a `QuerySet` (or something that looks and acts like one) and converts it into a vanilla list capable of being serialized using `simplejson`. This uses Django's Python serializer and does some minor cleanup to make it a sane looking JSON payload.
 * `BaseEndpoint._encode_record` takes a Django `Model` and encodes it into a normal Python dict. Additionally, it looks for `ForeignKey`'s and hydrates them to include the full associated record.
 
-
+The following code is a simple example of using the `BaseEndpoint._encode_record` method. You could easily encode a bunch of users with `BaseEndpoint._encode_data` by replacing a few lines of code in this example.
 
     from django.contrib.auth.models import User
     from ajax.endpoints import BaseEndpoint
