@@ -27,7 +27,7 @@ All of your AJAX endpoints should be put into a file called `endpoints.py` in yo
 
 The following is a simple example of an AJAX endpoint that just echo's back the POST. Keep in mind that ad-hoc AJAX endpoints basically work like regular Django views in that they get a `request` object. All of the usual view decorators can be used here without issue (e.g. `login_required`). The only thing to keep in mind is that views *only* get `request` as an argument and *must* return a `dict` or `HttpResponse`.
 
-    from ajax.exceptions import AJAXErrorr
+    from ajax.exceptions import AJAXError
 
     def right_back_at_you(request):
         if len(request.POST):
