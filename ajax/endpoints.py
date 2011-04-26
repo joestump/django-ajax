@@ -11,12 +11,6 @@ from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
 
 
 class BaseEndpoint(object):
-    def __init__(self, application, model, method, pk):
-        self.application = application
-        self.model = model
-        self.method = method
-        self.pk = pk
-
     def _encode_data(self, data):
         """Encode a ``QuerySet`` to a Python dict.
 
@@ -68,7 +62,16 @@ class BaseEndpoint(object):
         return data
 
 
-class ModelEndpoint(BaseEndpoint):
+class BaseModelFormEndpoint(BaseEndpoint):
+    def __init__(self, application, model, method, pk):
+        self.application = application
+        self.model = model
+        self.method = method
+        self.pk = pk
+
+
+class ModelEndpoint(BaseModelFormEndpoint):
+
     def create(self, request):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user, record):
@@ -176,7 +179,7 @@ class ModelEndpoint(BaseEndpoint):
         return False
 
 
-class FormEndpoint(BaseEndpoint):
+class FormEndpoint(BaseModelFormEndpoint):
     """AJAX endpoint for processing Django forms.
 
     The models and forms are processed in pretty much the same manner, only a
