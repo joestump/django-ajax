@@ -49,7 +49,6 @@ You can also create endpoints from callable objects. The `BaseEndpoint` class ha
 * `BaseEndpoint._encode_record` takes a Django `Model` and encodes it into a normal Python dict. Additionally, it looks for `ForeignKey`'s and hydrates them to include the full associated record.
 
 
-Here's an example:
 
     from django.contrib.auth.models import User
     from ajax.endpoints import BaseEndpoint
