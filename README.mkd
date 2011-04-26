@@ -136,3 +136,4 @@ This method is ran before any other security-related operations. This method all
 
 1. In `ModelEndpoint` modify `_extract_data()` to automatically recognize `ForeignKey` fields and convert the value provided in `request.POST` to `pk` for the given `ForeignKey`. This will allow people to provide a `pk` in `request.POST` without having to load the object itself.
 2. Create a JavaScript client that extends jQuery and exposes shortcuts for interfacing with `django-ajax`.
+3. Integrate [Django's CSRF token support](http://docs.djangoproject.com/en/dev/ref/contrib/csrf/). 
