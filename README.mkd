@@ -94,7 +94,12 @@ In addition to expanding `ForeignKey` while fetching, they are expanded when cre
 
 # Security
 
-There are a number of ways to lock down your ad-hoc and model endpoints. You can use the decorator(s) outlined below as well as throwing appropriate `AJAXError` exceptions from your ad-hoc endpoints. Of course, all exceptions raised and `HttpResponse` objects returned are respected by default. For model endpoints you can, additionally, use `can_create()`, `can_update()`, `can_delete()`, `can_get()`, and `authenticate()` to lock down various operations on the given model.
+There are a number of security features inherent in the framework along with ways to lock down your ad-hoc and model endpoints. You can use the decorator(s) outlined below as well as throwing appropriate `AJAXError` exceptions from your ad-hoc endpoints. Of course, all exceptions raised and `HttpResponse` objects returned are respected by default. For model endpoints you can, additionally, use `can_create()`, `can_update()`, `can_delete()`, `can_get()`, and `authenticate()` to lock down various operations on the given model.
+
+## Framework Security
+
+* All requests to an AJAX endpoint must be sent via `POST`, including a GET on a model's `pk`. 
+* The default `ModelEndpoint.authenticate()` method requires that a user is, at a minimum, logged in.
 
 ## Decorators
 
