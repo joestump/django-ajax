@@ -12,7 +12,7 @@ setup(
     license='BSD',
     packages=find_packages(),
     zip_safe=False,
-    install_requires=['setuptools', 'decorator',],
+    install_requires=['decorator',],
     include_package_data=True,
     classifiers=[
         "Programming Language :: Python",
