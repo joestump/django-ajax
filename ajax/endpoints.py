@@ -37,7 +37,7 @@ class BaseEndpoint(object):
         data = self._encode_data([record])[0]
         for field, val in data.iteritems():
             try:
-                f = self.model._meta.get_field(field)
+                f = record.__class__._meta.get_field(field)
                 if isinstance(f, models.ForeignKey):
                     try:
                         row = f.rel.to.objects.get(pk=val)
