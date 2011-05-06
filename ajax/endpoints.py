@@ -71,6 +71,11 @@ class BaseModelFormEndpoint(BaseEndpoint):
 
 
 class ModelEndpoint(BaseModelFormEndpoint):
+    _value_map = {
+        'false': False,
+        'true': True,
+        'null': None 
+    }
 
     def create(self, request):
         record = self.model(**self._extract_data(request))
@@ -85,7 +90,8 @@ class ModelEndpoint(BaseModelFormEndpoint):
             record.save()
             return record
         except ValidationError, e:
-            raise AJAXError(400, _("Could not save model."), errors=e.message_dict)
+            raise AJAXError(400, _("Could not save model."),
+                errors=e.message_dict)
 
     @require_pk
     def update(self, request):
@@ -132,11 +138,15 @@ class ModelEndpoint(BaseModelFormEndpoint):
                 if isinstance(f, models.ForeignKey):
                     data[smart_str(field)] = f.rel.to.objects.get(pk=val)
                 else:
-                    data[smart_str(field)] = val
+                    data[smart_str(field)] = self._extract_value(val)
             except FieldDoesNotExist:
                 pass
 
         return data
+
+    def _extract_value(self, value):
+        """If the value is true/false/null replace with Python equivalent."""
+        return ModelEndpoint._value_map.get(smart_str(value).lower(), value)
 
     def _get_record(self):
         """Fetch a given record.
