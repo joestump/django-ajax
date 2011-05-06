@@ -135,10 +135,11 @@ class ModelEndpoint(BaseModelFormEndpoint):
         for field, val in request.POST.iteritems():
             try:
                 f = self.model._meta.get_field(field)
-                if isinstance(f, models.ForeignKey):
+                val = self._extract_value(val)
+                if val and isinstance(f, models.ForeignKey):
                     data[smart_str(field)] = f.rel.to.objects.get(pk=val)
                 else:
-                    data[smart_str(field)] = self._extract_value(val)
+                    data[smart_str(field)] = val
             except FieldDoesNotExist:
                 pass
 
