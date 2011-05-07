@@ -1,7 +1,5 @@
 from setuptools import setup, find_packages
-import os
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.settings'
 
 setup(
     name='django-ajax',
@@ -22,7 +20,5 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Framework :: Django",
         "Environment :: Web Environment",
-    ],
-    test_suite="tests",
-    tests_require=['coverage', 'mock', 'django']
+    ]
 )
