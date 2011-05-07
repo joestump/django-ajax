@@ -143,3 +143,16 @@ LOGGING = {
         },
     }
 }
+
+# Only run Jenkins report generation on these apps.
+PROJECT_APPS = ('wasatch', 'accounts',)
+
+# Which Jenkins reports/tasks to run.
+JENKINS_TASKS = ('django_jenkins.tasks.run_pylint',
+                 'django_jenkins.tasks.run_pep8',
+                 'django_jenkins.tasks.run_pyflakes',
+                 'django_jenkins.tasks.with_coverage',
+                 'django_jenkins.tasks.django_tests',)
+
+# The test runner for the Jenkins command.
+JENKINS_TEST_RUNNER = 'django_jenkins.runner.CITestSuiteRunner'
