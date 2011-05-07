@@ -145,7 +145,7 @@ LOGGING = {
 }
 
 # Only run Jenkins report generation on these apps.
-PROJECT_APPS = ('wasatch', 'accounts',)
+PROJECT_APPS = ('example',)
 
 # Which Jenkins reports/tasks to run.
 JENKINS_TASKS = ('django_jenkins.tasks.run_pylint',
