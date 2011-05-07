@@ -1,0 +1,20 @@
+[
+    {
+        "pk": 1, 
+        "model": "example.widget", 
+        "fields": {
+            "active": false, 
+            "description": null, 
+            "title": "Iorem lipsum color bit amit"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "example.widget", 
+        "fields": {
+            "active": true, 
+            "description": null, 
+            "title": "Lorem ipsum dolor sit amet"
+        }
+    }
+]

@@ -1,5 +1,3 @@
-# Django settings for tests project.
-
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
@@ -115,6 +113,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'ajax',
     'example',
     # Uncomment the next line to enable the admin:
     # 'django.contrib.admin',

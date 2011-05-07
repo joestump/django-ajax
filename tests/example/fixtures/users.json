@@ -1,0 +1,20 @@
+[
+    {
+        "pk": 1, 
+        "model": "auth.user", 
+        "fields": {
+            "username": "jstump", 
+            "first_name": "", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": true, 
+            "is_staff": true, 
+            "last_login": "2011-05-07 15:19:28", 
+            "groups": [], 
+            "user_permissions": [], 
+            "password": "sha1$5c0a1$458aedb8565e65f687b8332c4183eb9556459980", 
+            "email": "joe@joestump.net", 
+            "date_joined": "2011-05-07 15:19:28"
+        }
+    }
+]
