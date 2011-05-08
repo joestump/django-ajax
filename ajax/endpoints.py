@@ -15,7 +15,7 @@ class BaseEndpoint(object):
         """Encode a ``QuerySet`` to a Python dict.
 
         Handles converting a ``QuerySet`` (or something that looks like one) to
-        a more vanilla version of a list of dict's without the extra 
+        a more vanilla version of a list of dict's without the extra
         inspection-related cruft.
         """
         data = serializers.serialize("python", data)
@@ -31,7 +31,7 @@ class BaseEndpoint(object):
         """Encode a record to a dict.
 
         This will take a Django model, encode it to a normal Python dict, and
-        then inspect the data for instances of ``ForeignKey`` and convert 
+        then inspect the data for instances of ``ForeignKey`` and convert
         those to a dict of the related record.
         """
         data = self._encode_data([record])[0]
@@ -43,7 +43,7 @@ class BaseEndpoint(object):
                         row = f.rel.to.objects.get(pk=val)
                         new_value = self._encode_record(row)
                     except f.rel.to.DoesNotExist:
-                        new_value = {}  # If it's not there add empty dict.
+                        new_value = None  # Changed this to None from {} -G
                 elif isinstance(f, models.BooleanField):
                     # If someone could explain to me why the fuck the Python
                     # serializer appears to serialize BooleanField to a string
@@ -74,7 +74,7 @@ class ModelEndpoint(BaseModelFormEndpoint):
     _value_map = {
         'false': False,
         'true': True,
-        'null': None 
+        'null': None
     }
 
     def create(self, request):
@@ -177,12 +177,12 @@ class ModelEndpoint(BaseModelFormEndpoint):
     def authenticate(self, request, application, method):
         """Authenticate the AJAX request.
 
-        By default any request to fetch a model is allowed for any user, 
+        By default any request to fetch a model is allowed for any user,
         including anonymous users. All other methods minimally require that
         the user is already logged in.
 
         Most likely you will want to lock down who can edit and delete various
-        models. To do this, just override this method in your child class. 
+        models. To do this, just override this method in your child class.
         """
         if request.user.is_authenticated():
             return True
