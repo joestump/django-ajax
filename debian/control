@@ -1,0 +1,22 @@
+Source: python-django-ajax
+Section: python
+Priority: extra
+Maintainer: Chris Lea <chl@chrislea.com>
+Build-Depends: cdbs, debhelper (>= 6), python (>= 2.5), python-support, python-setuptools
+Standards-Version: 3.8.3
+Homepage: https://launchpad.net/~chris-lea/+archive/python-django-ajax
+
+Package: python-django-ajax
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>= 2.5), python-django (>= 1.2.0), python-decorator
+Description: AJAX endpoint framework for Django
+ This package creates a minimal framework for
+ creating AJAX endpoints of your own in Django
+ without having to create all of the mappings,
+ handling errors, building JSON, etc.
+ .
+ Additionally, this package allows you to
+ create AJAX endpoints for manipulating Django
+ models directly from JavaScript without much
+ effort. This feature works in a similar manner
+ to Django's ModelAdmin feature in admin.py.

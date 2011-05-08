@@ -1,0 +1,5 @@
+python-django-ajax (0.1.0) unstable; urgency=low
+
+  * Initial packaging
+
+ -- Chris Lea <chl@chrislea.com>  Tue, 26 Apr 2011 23:59:21 +0000
