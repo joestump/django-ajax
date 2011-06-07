@@ -27,7 +27,7 @@ class BaseEndpoint(object):
 
         return ret
 
-    def _encode_record(self, record):
+    def _encode_record(self, record, expand=True):
         """Encode a record to a dict.
 
         This will take a Django model, encode it to a normal Python dict, and
@@ -38,10 +38,10 @@ class BaseEndpoint(object):
         for field, val in data.iteritems():
             try:
                 f = record.__class__._meta.get_field(field)
-                if isinstance(f, models.ForeignKey):
+                if expand and isinstance(f, models.ForeignKey):
                     try:
                         row = f.rel.to.objects.get(pk=val)
-                        new_value = self._encode_record(row)
+                        new_value = self._encode_record(row, False)
                     except f.rel.to.DoesNotExist:
                         new_value = None  # Changed this to None from {} -G
                 elif isinstance(f, models.BooleanField):

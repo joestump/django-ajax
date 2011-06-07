@@ -37,7 +37,8 @@ def json_response(f, *args, **kwargs):
         type, message, trace = sys.exc_info()
         if settings.DEBUG:
             import traceback 
-            tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for l in traceback.extract_tb(trace)]
+            tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for 
+                l in traceback.extract_tb(trace)]
             result = AJAXError(500, message, traceback=tb).get_response()
         else:
             result = AJAXError(500, message).get_response()
