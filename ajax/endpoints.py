@@ -48,7 +48,7 @@ class BaseEndpoint(object):
                     # If someone could explain to me why the fuck the Python
                     # serializer appears to serialize BooleanField to a string
                     # with "True" or "False" in it, please let me know.
-                    if val == "True":
+                    if val == "True" or (type(val) == bool and val):
                         new_value = True
                     else:
                         new_value = False
