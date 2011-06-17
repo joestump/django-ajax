@@ -8,6 +8,7 @@ from django.db.models.fields import FieldDoesNotExist
 from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
     PrimaryKeyMissing
+import ajax
 
 
 class BaseEndpoint(object):
@@ -18,12 +19,9 @@ class BaseEndpoint(object):
         a more vanilla version of a list of dict's without the extra
         inspection-related cruft.
         """
-        data = serializers.serialize("python", data)
         ret = []
         for d in data:
-            tmp = d['fields']
-            tmp['pk'] = d['pk']
-            ret.append(tmp)
+            ret.append(self._encode_record(d))
 
         return ret
 
@@ -34,7 +32,7 @@ class BaseEndpoint(object):
         then inspect the data for instances of ``ForeignKey`` and convert
         those to a dict of the related record.
         """
-        data = self._encode_data([record])[0]
+        data = ajax.encoder.encode(record)
         for field, val in data.iteritems():
             try:
                 f = record.__class__._meta.get_field(field)
