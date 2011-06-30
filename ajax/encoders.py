@@ -5,8 +5,15 @@ from ajax.exceptions import AlreadyRegistered, NotRegistered
 class DefaultEncoder(object):
     def to_dict(self, record):
         data = serializers.serialize('python', [record])[0]
-        ret = data['fields']
+
+        if hasattr('extra_fields'):
+            ret = record.extra_fields
+        else:
+            ret = {}
+            
+        ret.update(data['fields'])
         ret['pk'] = data['pk']
+
         return ret
 
     __call__ = to_dict
@@ -26,6 +33,7 @@ class ExcludeEncoder(DefaultEncoder):
             final[key] = val
 
         return final
+
 
 class IncludeEncoder(DefaultEncoder):
     def __init__(self, include):
