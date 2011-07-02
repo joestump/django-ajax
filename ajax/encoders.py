@@ -6,7 +6,7 @@ class DefaultEncoder(object):
     def to_dict(self, record):
         data = serializers.serialize('python', [record])[0]
 
-        if hasattr('extra_fields'):
+        if hasattr(record, 'extra_fields'):
             ret = record.extra_fields
         else:
             ret = {}
