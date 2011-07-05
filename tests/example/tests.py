@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 from django.utils import simplejson as json
+from example.models import Widget
 
 
 class BaseTest(TestCase):
@@ -37,6 +38,21 @@ class BaseTest(TestCase):
 
         return (response, json.loads(response.content))
 
+class EncodeTests(BaseTest):
+    def test_encode(self):
+        from ajax.encoders import encode_data, encode_record
+        widget = Widget.objects.get(pk=1)
+        self.assertEquals(widget.title,'Iorem lipsum color bit amit')
+        encoded = encode_record(widget)
+        for k in ('title','active','description'):
+            self.assertEquals(encoded[k],getattr(widget,k))
+        widgets = Widget.objects.all()
+        all_encoded = encode_data(widgets)
+        for encoded in all_encoded:
+            widget = Widget.objects.get(pk=encoded['pk'])
+            for k in ('title','active','description'):
+                self.assertEquals(encoded[k],getattr(widget,k))
+        
 
 class EndpointTests(BaseTest):
     def test_echo(self):
