@@ -60,7 +60,7 @@ The following code is a simple example of using the `BaseEndpoint._encode_record
             try:
                 user = User.objects.get(pk=int(request.POST['user']))
             except User.DoesNotExist:
-                return AJAXError(404, 'Invalid user.')
+                raise AJAXError(404, 'Invalid user.')
 
             return self._encode_record(user)
 
