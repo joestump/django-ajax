@@ -30,6 +30,8 @@ def json_response(f, *args, **kwargs):
     """ 
     try:
         result = f(*args, **kwargs)
+        if isinstance(result, AJAXError):
+            raise result
     except AJAXError, e:
         result = e.get_response()
     except Exception, e:
