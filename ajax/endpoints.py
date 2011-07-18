@@ -9,56 +9,14 @@ from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
     PrimaryKeyMissing
 import ajax
-
+from ajax.encoders import encode_data, encode_record
 
 class BaseEndpoint(object):
     def _encode_data(self, data):
-        """Encode a ``QuerySet`` to a Python dict.
-
-        Handles converting a ``QuerySet`` (or something that looks like one) to
-        a more vanilla version of a list of dict's without the extra
-        inspection-related cruft.
-        """
-        ret = []
-        for d in data:
-            ret.append(self._encode_record(d))
-
-        return ret
+        return encode_data(data)
 
     def _encode_record(self, record, expand=True):
-        """Encode a record to a dict.
-
-        This will take a Django model, encode it to a normal Python dict, and
-        then inspect the data for instances of ``ForeignKey`` and convert
-        those to a dict of the related record.
-        """
-        data = ajax.encoder.encode(record)
-        for field, val in data.iteritems():
-            try:
-                f = record.__class__._meta.get_field(field)
-                if expand and isinstance(f, models.ForeignKey):
-                    try:
-                        row = f.rel.to.objects.get(pk=val)
-                        new_value = self._encode_record(row, False)
-                    except f.rel.to.DoesNotExist:
-                        new_value = None  # Changed this to None from {} -G
-                elif isinstance(f, models.BooleanField):
-                    # If someone could explain to me why the fuck the Python
-                    # serializer appears to serialize BooleanField to a string
-                    # with "True" or "False" in it, please let me know.
-                    if val == "True" or (type(val) == bool and val):
-                        new_value = True
-                    else:
-                        new_value = False
-                else:
-                    new_value = val
-
-                data[smart_str(field)] = new_value
-            except FieldDoesNotExist:
-                pass
-
-        return data
-
+        return encode_record(record, expand)
 
 class BaseModelFormEndpoint(BaseEndpoint):
     def __init__(self, application, model, method, pk):
