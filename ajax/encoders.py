@@ -3,6 +3,7 @@ from django.utils.html import escape
 from ajax.exceptions import AlreadyRegistered, NotRegistered
 from django.db.models.fields import FieldDoesNotExist
 from django.db import models
+from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 import collections
 
@@ -106,7 +107,7 @@ class Encoders(object):
         if isinstance(record, collections.Iterable):
             ret = []
             for i in record:
-                ret.append(self.encode(record))
+                ret.append(self.encode(i))
         else:
             ret = encoder(record)
 
