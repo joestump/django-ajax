@@ -1,10 +1,12 @@
 from django.core import serializers
+from django.utils.html import escape
 from ajax.exceptions import AlreadyRegistered, NotRegistered
 
 
 class DefaultEncoder(object):
     def to_dict(self, record):
         data = serializers.serialize('python', [record])[0]
+
 
         if hasattr(record, 'extra_fields'):
             ret = record.extra_fields
@@ -13,6 +15,9 @@ class DefaultEncoder(object):
             
         ret.update(data['fields'])
         ret['pk'] = data['pk']
+
+        for key, val in ret.iteritems():
+            ret[key] = escape(val)
 
         return ret
 
