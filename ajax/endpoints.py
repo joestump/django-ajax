@@ -8,35 +8,26 @@ from django.db.models.fields import FieldDoesNotExist
 from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
     PrimaryKeyMissing
-import ajax
-from ajax.encoders import encode_data, encode_record
-
-class BaseEndpoint(object):
-    def _encode_data(self, data):
-        return encode_data(data)
-
-    def _encode_record(self, record, expand=True):
-        return encode_record(record, expand)
-
-class BaseModelFormEndpoint(BaseEndpoint):
-    def __init__(self, application, model, method, pk):
-        self.application = application
-        self.model = model
-        self.method = method
-        self.pk = pk
+from ajax.encoders import encoder
 
 
-class ModelEndpoint(BaseModelFormEndpoint):
+class ModelEndpoint(object):
     _value_map = {
         'false': False,
         'true': True,
         'null': None
     }
 
+    def __init__(self, application, model, method, pk):
+        self.application = application
+        self.model = model
+        self.method = method
+        self.pk = pk
+
     def create(self, request):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user, record):
-            return self._encode_record(self._save(record))
+            return encoder.encode(self._save(record))
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
@@ -56,7 +47,7 @@ class ModelEndpoint(BaseModelFormEndpoint):
             for key, val in self._extract_data(request).iteritems():
                 setattr(record, key, val)
 
-            return self._encode_record(self._save(record))
+            return encoder.encode(self._save(record))
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
@@ -73,7 +64,7 @@ class ModelEndpoint(BaseModelFormEndpoint):
     def get(self, request):
         record = self._get_record()
         if self.can_get(request.user, record):
-            return self._encode_record(record)
+            return encoder.encode(record)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
@@ -146,7 +137,7 @@ class ModelEndpoint(BaseModelFormEndpoint):
         return False
 
 
-class FormEndpoint(BaseModelFormEndpoint):
+class FormEndpoint(object):
     """AJAX endpoint for processing Django forms.
 
     The models and forms are processed in pretty much the same manner, only a
@@ -159,11 +150,11 @@ class FormEndpoint(BaseModelFormEndpoint):
             if hasattr(model, 'save'):
                 # This is a model form so we save it and return the model.
                 model.save()
-                return self._encode_record(model)
+                return encoder.encode(model)
             else:
                 return model  # Assume this is a dict to encode.
         else:
-            return self._encode_data(form.errors)
+            return encoder.encode(form.errors)
 
     def update(self, request):
         raise AJAXError(404, _("Endpoint does not exist."))

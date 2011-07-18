@@ -64,10 +64,6 @@ def endpoint_loader(request, application, model, **kwargs):
     try:
         module = import_module('%s.endpoints' % application)
     except ImportError, e:
-        if settings.DEBUG:
-            import traceback
-            print traceback.print_exc()
-
         raise AJAXError(404, _('AJAX endpoint does not exist.'))
 
     if hasattr(module, model):
