@@ -20,7 +20,7 @@ class DefaultEncoder(object):
         ret.update(data['fields'])
         ret['pk'] = data['pk']
 
-        for field, val in data.iteritems():
+        for field, val in ret.iteritems():
             try:
                 f = record.__class__._meta.get_field(field)
                 if expand and isinstance(f, models.ForeignKey):
@@ -40,8 +40,8 @@ class DefaultEncoder(object):
                 else:
                     new_value = escape(val)
     
-                data[smart_str(field)] = new_value
-            except FieldDoesNotExist:
+                ret[smart_str(field)] = new_value
+            except FieldDoesNotExist, e:
                 pass
 
         return ret
