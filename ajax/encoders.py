@@ -9,6 +9,13 @@ import collections
 
 
 class DefaultEncoder(object):
+    _mapping = {
+        'IntegerField': int,
+        'PositiveIntegerField': int,
+        'AutoField': int,
+        'FloatField': float,
+    }
+
     def to_dict(self, record, expand=True):
         data = serializers.serialize('python', [record])[0]
 
@@ -29,16 +36,8 @@ class DefaultEncoder(object):
                         new_value = self.to_dict(row, False)
                     except f.rel.to.DoesNotExist:
                         new_value = None  # Changed this to None from {} -G
-                elif isinstance(f, models.BooleanField):
-                    # If someone could explain to me why the fuck the Python
-                    # serializer appears to serialize BooleanField to a string
-                    # with "True" or "False" in it, please let me know.
-                    if val == "True" or (type(val) == bool and val):
-                        new_value = True
-                    else:
-                        new_value = False
                 else:
-                    new_value = escape(val)
+                    new_value = self._encode_value(f, val)
     
                 ret[smart_str(field)] = new_value
             except FieldDoesNotExist, e:
@@ -47,6 +46,24 @@ class DefaultEncoder(object):
         return ret
 
     __call__ = to_dict
+
+    def _encode_value(self, field, value):
+        if value is None:
+            return value # Leave all None's as-is as they encode fine.
+
+        try:
+            return self._mapping[field.__class__.__name__](value)
+        except KeyError:
+            if isinstance(field, models.ForeignKey):
+                f = field.rel.to._meta.get_field(field.rel.field_name)
+                return self._encode_value(f, value)
+            if isinstance(field, models.BooleanField):
+                # If someone could explain to me why the fuck the Python
+                # serializer appears to serialize BooleanField to a string
+                # with "True" or "False" in it, please let me know.
+                return (value == "True" or (type(value) == bool and value))
+
+        return escape(value)
 
 
 class ExcludeEncoder(DefaultEncoder):
