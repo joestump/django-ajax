@@ -43,6 +43,12 @@ class DefaultEncoder(object):
             except FieldDoesNotExist, e:
                 pass  # Assume extra fields are already safe.
 
+        if hasattr(record, 'tags') and \
+            record.tags.__class__.__name__.endswith('TaggableManager'):
+            # Looks like this model is using taggit.
+            ret['tags'] = [{'name': escape(t.name), 
+                'slug': escape(t.slug)} for t in record.tags.all()]
+
         return ret
 
     __call__ = to_dict
@@ -57,7 +63,7 @@ class DefaultEncoder(object):
             if isinstance(field, models.ForeignKey):
                 f = field.rel.to._meta.get_field(field.rel.field_name)
                 return self._encode_value(f, value)
-            if isinstance(field, models.BooleanField):
+            elif isinstance(field, models.BooleanField):
                 # If someone could explain to me why the fuck the Python
                 # serializer appears to serialize BooleanField to a string
                 # with "True" or "False" in it, please let me know.
