@@ -93,6 +93,18 @@ It should be noted that the AJAX package takes a liberal approach when it comes 
 
 In addition to expanding `ForeignKey` while fetching, they are expanded when creating a record from the data in POST. If a `ForeignKey` to `User` is in a given model, and the field is called `author`, `ModelEndpoint` will detect that and automatically assume that `request.POST['author']` is an appropriate `pk`, instantiate it, and replace it with a full instance of the associated `User` object.
 
+## Support for `django-taggit`
+
+The popular [django-taggit](https://github.com/alex/django-taggit/) is great for adding tags to your Django models. The entire `django-taggit` [API](http://django-taggit.readthedocs.org/en/latest/api.html) is exposed via AJAX for models that have the `tags` attribute. 
+
+* `/ajax/my_app/mymodel/{pk}/tags/add.json` will add the tags specified by the `POST` parameter `tags`, which is a comma separated list of tags.
+* `/ajax/my_app/mymodel/{pk}/tags/remove.json` will remove the tags specified by the `POST` parameter `tags`.
+* `/ajax/my_app/mymodel/{pk}/tags/set.json` will replace the object's tags specified by `pk` with the tags specified by the `POST` parameter `tags`.
+* `/ajax/my_app/mymodel/{pk}/tags/clear.json` will clear all tags from the `pk` specified.
+* `/ajax/my_app/mymodel/{pk}/tags/similar.json` will fetch objects that are similarly tagged to the `pk` specified.
+
+**NOTE:** The filtering options in the `django-taggit` API are not available via AJAX at this point.
+
 # Security
 
 There are a number of security features inherent in the framework along with ways to lock down your ad-hoc and model endpoints. You can use the decorator(s) outlined below as well as throwing appropriate `AJAXError` exceptions from your ad-hoc endpoints. Of course, all exceptions raised and `HttpResponse` objects returned are respected by default. For model endpoints you can, additionally, use `can_create()`, `can_update()`, `can_delete()`, `can_get()`, and `authenticate()` to lock down various operations on the given model.
@@ -140,6 +152,4 @@ This method is ran before any other security-related operations. This method all
 
 # Todo
 
-1. In `ModelEndpoint` modify `_extract_data()` to automatically recognize `ForeignKey` fields and convert the value provided in `request.POST` to `pk` for the given `ForeignKey`. This will allow people to provide a `pk` in `request.POST` without having to load the object itself.
-2. Create a JavaScript client that extends jQuery and exposes shortcuts for interfacing with `django-ajax`.
-3. Integrate [Django's CSRF token support](http://docs.djangoproject.com/en/dev/ref/contrib/csrf/). 
+1. Integrate [Django's CSRF token support](http://docs.djangoproject.com/en/dev/ref/contrib/csrf/). 
