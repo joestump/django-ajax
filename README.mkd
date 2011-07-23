@@ -93,7 +93,7 @@ It should be noted that the AJAX package takes a liberal approach when it comes 
 
 In addition to expanding `ForeignKey` while fetching, they are expanded when creating a record from the data in POST. If a `ForeignKey` to `User` is in a given model, and the field is called `author`, `ModelEndpoint` will detect that and automatically assume that `request.POST['author']` is an appropriate `pk`, instantiate it, and replace it with a full instance of the associated `User` object.
 
-## Support for `django-taggit`
+### Support for django-taggit
 
 The popular [django-taggit](https://github.com/alex/django-taggit/) is great for adding tags to your Django models. The entire `django-taggit` [API](http://django-taggit.readthedocs.org/en/latest/api.html) is exposed via AJAX for models that have the `tags` attribute. 
 
