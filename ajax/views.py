@@ -71,11 +71,15 @@ def endpoint_loader(request, application, model, **kwargs):
         endpoint = getattr(module, model)
     else:
         # This is a model endpoint
-        pk = kwargs.get('pk', None)
         method = kwargs.get('method', 'create').lower()
+        try:
+            del kwargs['method']
+        except:
+            pass
 
         try:
-            model_endpoint = ajax.endpoint.load(model, application, method, pk)
+            model_endpoint = ajax.endpoint.load(model, application, method,
+                **kwargs)
             if not model_endpoint.authenticate(request, application, method):
                 raise AJAXError(403, _('User is not authorized.'))
 

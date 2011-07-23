@@ -18,11 +18,12 @@ class ModelEndpoint(object):
         'null': None
     }
 
-    def __init__(self, application, model, method, pk):
+    def __init__(self, application, model, method, **kwargs):
         self.application = application
         self.model = model
         self.method = method
-        self.pk = pk
+        self.pk = kwargs.get('pk', None)
+        self.options = kwargs
 
     def create(self, request):
         record = self.model(**self._extract_data(request))
@@ -30,6 +31,26 @@ class ModelEndpoint(object):
             return encoder.encode(self._save(record))
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
+
+    def tags(self, request):
+        try:
+            tags = [t.strip() for t in 
+                smart_str(request.POST['tags']).split(',')]
+        except Exception, e:
+            tags = []
+
+        cmd = self.options.get('taggit_command', None)
+        if not cmd:
+            raise AJAXError(400, _("Invalid or missing taggit command."))
+
+        record = self._get_record()
+        if cmd == 'similar':
+            result = record.tags.similar_objects()
+        else:
+            getattr(record.tags, cmd)(*tags)
+            result = record.tags.all()
+
+        return encoder.encode(result)
 
     def _save(self, record):
         try:
@@ -179,9 +200,10 @@ class Endpoints(object):
 
         del self._registry[model]
 
-    def load(self, model_name, application, method, pk):
+    def load(self, model_name, application, method, **kwargs):
         for model in self._registry:
             if model.__name__.lower() == model_name:
-                return self._registry[model](application, model, method, pk)
+                return self._registry[model](application, model, method, 
+                    **kwargs)
 
         raise NotRegistered()
