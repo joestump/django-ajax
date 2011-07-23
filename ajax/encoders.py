@@ -41,7 +41,7 @@ class DefaultEncoder(object):
     
                 ret[smart_str(field)] = new_value
             except FieldDoesNotExist, e:
-                pass
+                pass  # Assume extra fields are already safe.
 
         return ret
 
