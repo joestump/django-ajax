@@ -1,6 +1,6 @@
 from ajax import endpoint
 from ajax.decorators import login_required
-from ajax.endpoints import ModelEndpoint, BaseEndpoint
+from ajax.endpoints import ModelEndpoint
 from ajax.exceptions import AJAXError
 
 

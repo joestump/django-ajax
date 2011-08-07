@@ -29,7 +29,6 @@ class BaseTest(TestCase):
         ``debug`` if set to True will spit out the response and content.
         """
         response = self.client.post(uri, data)
-
         if debug:
             print response.__class__.__name__
             print response
@@ -40,14 +39,14 @@ class BaseTest(TestCase):
 
 class EncodeTests(BaseTest):
     def test_encode(self):
-        from ajax.encoders import encode_data, encode_record
+        from ajax.encoders import encoder
         widget = Widget.objects.get(pk=1)
         self.assertEquals(widget.title,'Iorem lipsum color bit amit')
-        encoded = encode_record(widget)
+        encoded = encoder.encode(widget)
         for k in ('title','active','description'):
             self.assertEquals(encoded[k],getattr(widget,k))
         widgets = Widget.objects.all()
-        all_encoded = encode_data(widgets)
+        all_encoded = encoder.encode(widgets)
         for encoded in all_encoded:
             widget = Widget.objects.get(pk=encoded['pk'])
             for k in ('title','active','description'):
