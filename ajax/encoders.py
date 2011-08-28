@@ -1,11 +1,18 @@
 from django.core import serializers
-from django.utils.html import escape
 from ajax.exceptions import AlreadyRegistered, NotRegistered
 from django.db.models.fields import FieldDoesNotExist
 from django.db import models
 from django.db.models.query import QuerySet
-from django.utils.encoding import smart_str
+from django.utils.encoding import smart_str, force_unicode
+from django.utils.safestring import mark_safe
+from django.utils.functional import allow_lazy
 import collections
+
+
+def escape(html):
+    return mark_safe(force_unicode(html).replace('&',
+        '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
+escape = allow_lazy(escape, unicode)
 
 
 class DefaultEncoder(object):
