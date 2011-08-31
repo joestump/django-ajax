@@ -2,17 +2,10 @@ from django.core import serializers
 from ajax.exceptions import AlreadyRegistered, NotRegistered
 from django.db.models.fields import FieldDoesNotExist
 from django.db import models
+from django.utils.html import escape
 from django.db.models.query import QuerySet
-from django.utils.encoding import smart_str, force_unicode
-from django.utils.safestring import mark_safe
-from django.utils.functional import allow_lazy
+from django.utils.encoding import smart_str
 import collections
-
-
-def escape(html):
-    return mark_safe(force_unicode(html).replace('&',
-        '&amp;').replace('<', '&lt;').replace('>', '&gt;'))
-escape = allow_lazy(escape, unicode)
 
 
 class DefaultEncoder(object):
@@ -53,8 +46,8 @@ class DefaultEncoder(object):
         if hasattr(record, 'tags') and \
             record.tags.__class__.__name__.endswith('TaggableManager'):
             # Looks like this model is using taggit.
-            ret['tags'] = [{'name': escape(t.name), 
-                'slug': escape(t.slug)} for t in record.tags.all()]
+            ret['tags'] = [{'name': self._escape(t.name), 
+                'slug': self._escape(t.slug)} for t in record.tags.all()]
 
         return ret
 
@@ -76,6 +69,15 @@ class DefaultEncoder(object):
                 # with "True" or "False" in it, please let me know.
                 return (value == "True" or (type(value) == bool and value))
 
+        return self._escape(value)
+
+    def _escape(self, value):
+        return value
+
+
+class HTMLEscapeEncoder(DefaultEncoder):
+    """Encodes all values using Django's HTML escape function."""
+    def _escape(self, value):
         return escape(value)
 
 
