@@ -129,12 +129,13 @@ class Encoders(object):
 
         del self._registry[model]
 
-    def encode(self, record):
-        if isinstance(record, models.Model) and \
-            record.__class__ in self._registry:
-            encoder = self._registry[record.__class__]
-        else:
-            encoder = DefaultEncoder() 
+    def encode(self, record, encoder=None):
+        if not encoder:
+            if isinstance(record, models.Model) and \
+                record.__class__ in self._registry:
+                encoder = self._registry[record.__class__]
+            else:
+                encoder = DefaultEncoder() 
 
         if isinstance(record, collections.Iterable):
             ret = []
