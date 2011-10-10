@@ -42,7 +42,13 @@ class DefaultEncoder(object):
                 ret[smart_str(field)] = new_value
             except FieldDoesNotExist, e:
                 pass  # Assume extra fields are already safe.
-
+                  
+        if expand and hasattr(record, 'tags') and \
+          record.tags.__class__.__name__.endswith('TaggableManager'):
+          # Looks like this model is using taggit.
+          ret['tags'] = [{'name': self._escape(t.name), 
+          'slug': self._escape(t.slug)} for t in record.tags.all()]
+          
         return ret
 
     __call__ = to_dict
