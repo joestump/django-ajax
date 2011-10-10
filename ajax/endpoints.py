@@ -34,7 +34,7 @@ class ModelEndpoint(object):
 
     def tags(self, request):
         try:
-            tags = [t.strip() for t in 
+            tags = [t.strip() for t in
                 smart_str(request.POST['tags']).split(',')]
         except Exception, e:
             tags = []
@@ -203,7 +203,7 @@ class Endpoints(object):
     def load(self, model_name, application, method, **kwargs):
         for model in self._registry:
             if model.__name__.lower() == model_name:
-                return self._registry[model](application, model, method, 
+                return self._registry[model](application, model, method,
                     **kwargs)
 
         raise NotRegistered()
