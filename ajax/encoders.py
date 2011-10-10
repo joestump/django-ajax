@@ -16,14 +16,14 @@ class DefaultEncoder(object):
         'FloatField': float,
     }
 
-    def to_dict(self, record, expand=True):
+    def to_dict(self, record, expand=False):
         data = serializers.serialize('python', [record])[0]
 
         if hasattr(record, 'extra_fields'):
             ret = record.extra_fields
         else:
             ret = {}
-            
+
         ret.update(data['fields'])
         ret['pk'] = data['pk']
 
@@ -38,16 +38,10 @@ class DefaultEncoder(object):
                         new_value = None  # Changed this to None from {} -G
                 else:
                     new_value = self._encode_value(f, val)
-    
+
                 ret[smart_str(field)] = new_value
             except FieldDoesNotExist, e:
                 pass  # Assume extra fields are already safe.
-
-        if hasattr(record, 'tags') and \
-            record.tags.__class__.__name__.endswith('TaggableManager'):
-            # Looks like this model is using taggit.
-            ret['tags'] = [{'name': self._escape(t.name), 
-                'slug': self._escape(t.slug)} for t in record.tags.all()]
 
         return ret
 
@@ -107,7 +101,7 @@ class IncludeEncoder(DefaultEncoder):
         for key, val in data.iteritems():
             if key not in self.include:
                 continue
-    
+
             final[key] = val
 
         return final
@@ -135,7 +129,7 @@ class Encoders(object):
                 record.__class__ in self._registry:
                 encoder = self._registry[record.__class__]
             else:
-                encoder = DefaultEncoder() 
+                encoder = DefaultEncoder()
 
         if isinstance(record, collections.Iterable):
             ret = []
