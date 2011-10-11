@@ -140,7 +140,7 @@ class Encoders(object):
         if isinstance(record, collections.Iterable):
             ret = []
             for i in record:
-                ret.append(self.encode(i))
+                ret.append(self.encode(i, encoder))
         else:
             ret = encoder(record)
 
