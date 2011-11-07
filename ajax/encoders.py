@@ -72,7 +72,6 @@ class DefaultEncoder(object):
         return self._escape(value)
 
     def _escape(self, value):
-        print '_escape %s' % (self.htmlescape)
         if self.htmlescape:
             return escape(value)
         return value
