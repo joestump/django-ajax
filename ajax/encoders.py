@@ -15,8 +15,8 @@ class DefaultEncoder(object):
         'AutoField': int,
         'FloatField': float,
     }
-
-    def to_dict(self, record, expand=False):
+    def to_dict(self, record, expand=False, htmlescape=False):
+        self.htmlescape = htmlescape
         data = serializers.serialize('python', [record])[0]
 
         if hasattr(record, 'extra_fields'):
@@ -72,6 +72,8 @@ class DefaultEncoder(object):
         return self._escape(value)
 
     def _escape(self, value):
+        if self.htmlescape:
+            return escape(value)
         return value
 
 
@@ -85,8 +87,8 @@ class ExcludeEncoder(DefaultEncoder):
     def __init__(self, exclude):
         self.exclude = exclude
 
-    def __call__(self, record):
-        data = self.to_dict(record)
+    def __call__(self, record, htmlescape=False):
+        data = self.to_dict(record, htmlescape=htmlescape)
         final = {}
         for key, val in data.iteritems():
             if key in self.exclude:
@@ -101,8 +103,8 @@ class IncludeEncoder(DefaultEncoder):
     def __init__(self, include):
         self.include = include
 
-    def __call__(self, record):
-        data = self.to_dict(record)
+    def __call__(self, record, htmlescape=False):
+        data = self.to_dict(record, htmlescape=htmlescape)
         final = {}
         for key, val in data.iteritems():
             if key not in self.include:
@@ -128,21 +130,26 @@ class Encoders(object):
             raise NotRegistered()
 
         del self._registry[model]
-
-    def encode(self, record, encoder=None):
-        if not encoder:
-            if isinstance(record, models.Model) and \
-                record.__class__ in self._registry:
-                encoder = self._registry[record.__class__]
-            else:
-                encoder = DefaultEncoder()
-
+    
+    def get_encoder_from_record(self, record):
+        if isinstance(record, models.Model) and \
+            record.__class__ in self._registry:
+            encoder = self._registry[record.__class__]
+        else:
+            encoder = DefaultEncoder()
+        return encoder
+        
+    def encode(self, record, encoder=None, htmlescape=False):
         if isinstance(record, collections.Iterable):
             ret = []
             for i in record:
-                ret.append(self.encode(i, encoder))
+                if not encoder:
+                    encoder = self.get_encoder_from_record(i)
+                ret.append(self.encode(i, htmlescape=htmlescape))
         else:
-            ret = encoder(record)
+            if not encoder:
+                encoder = self.get_encoder_from_record(record)
+            ret = encoder(record, htmlescape=htmlescape)
 
         return ret
 
