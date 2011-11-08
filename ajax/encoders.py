@@ -15,8 +15,8 @@ class DefaultEncoder(object):
         'AutoField': int,
         'FloatField': float,
     }
-    def to_dict(self, record, expand=False, htmlescape=False):
-        self.htmlescape = htmlescape
+    def to_dict(self, record, expand=False, html_escape=False):
+        self.html_escape = html_escape
         data = serializers.serialize('python', [record])[0]
 
         if hasattr(record, 'extra_fields'):
@@ -72,7 +72,7 @@ class DefaultEncoder(object):
         return self._escape(value)
 
     def _escape(self, value):
-        if self.htmlescape:
+        if self.html_escape:
             return escape(value)
         return value
 
@@ -87,8 +87,8 @@ class ExcludeEncoder(DefaultEncoder):
     def __init__(self, exclude):
         self.exclude = exclude
 
-    def __call__(self, record, htmlescape=False):
-        data = self.to_dict(record, htmlescape=htmlescape)
+    def __call__(self, record, html_escape=False):
+        data = self.to_dict(record, html_escape=html_escape)
         final = {}
         for key, val in data.iteritems():
             if key in self.exclude:
@@ -103,8 +103,8 @@ class IncludeEncoder(DefaultEncoder):
     def __init__(self, include):
         self.include = include
 
-    def __call__(self, record, htmlescape=False):
-        data = self.to_dict(record, htmlescape=htmlescape)
+    def __call__(self, record, html_escape=False):
+        data = self.to_dict(record, html_escape=html_escape)
         final = {}
         for key, val in data.iteritems():
             if key not in self.include:
@@ -139,17 +139,17 @@ class Encoders(object):
             encoder = DefaultEncoder()
         return encoder
         
-    def encode(self, record, encoder=None, htmlescape=False):
+    def encode(self, record, encoder=None, html_escape=False):
         if isinstance(record, collections.Iterable):
             ret = []
             for i in record:
                 if not encoder:
                     encoder = self.get_encoder_from_record(i)
-                ret.append(self.encode(i, htmlescape=htmlescape))
+                ret.append(self.encode(i, html_escape=html_escape))
         else:
             if not encoder:
                 encoder = self.get_encoder_from_record(record)
-            ret = encoder(record, htmlescape=htmlescape)
+            ret = encoder(record, html_escape=html_escape)
 
         return ret
 

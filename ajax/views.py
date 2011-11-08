@@ -37,7 +37,7 @@ def json_response(f, *args, **kwargs):
     except Exception, e:
         import sys
         type, message, trace = sys.exc_info()
-        if settings.DEBUG:
+        if True or settings.DEBUG:
             import traceback 
             tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for 
                 l in traceback.extract_tb(trace)]
