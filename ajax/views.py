@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
 from django.utils.importlib import import_module
@@ -34,6 +34,8 @@ def json_response(f, *args, **kwargs):
             raise result
     except AJAXError, e:
         result = e.get_response()
+    except Http404, e:
+        result = AJAXError(404, e.__str__()).get_response()
     except Exception, e:
         import sys
         type, message, trace = sys.exc_info()
