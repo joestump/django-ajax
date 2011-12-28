@@ -32,6 +32,9 @@ class ModelEndpoint(object):
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
+    def create_record_from_request(request):
+        pass
+
     def tags(self, request):
         try:
             tags = [t.strip() for t in
