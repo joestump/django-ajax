@@ -21,6 +21,7 @@ class ModelEndpoint(object):
     def __init__(self, application, model, method, **kwargs):
         self.application = application
         self.model = model
+        self.fields = [f.name for f in self.model._meta.fields]
         self.method = method
         self.pk = kwargs.get('pk', None)
         self.options = kwargs
@@ -28,20 +29,13 @@ class ModelEndpoint(object):
     def create(self, request):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user, record):
-            return encoder.encode(self._save(record))
+            record = self._save(record)
+            self._set_tags(request, record)
+            return encoder.encode(record)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
-    def create_record_from_request(request):
-        pass
-
     def tags(self, request):
-        try:
-            tags = [t.strip() for t in
-                smart_str(request.POST['tags']).split(',')]
-        except Exception, e:
-            tags = []
-
         cmd = self.options.get('taggit_command', None)
         if not cmd:
             raise AJAXError(400, _("Invalid or missing taggit command."))
@@ -50,10 +44,16 @@ class ModelEndpoint(object):
         if cmd == 'similar':
             result = record.tags.similar_objects()
         else:
+            tags = self._extract_tags(request)
             getattr(record.tags, cmd)(*tags)
             result = record.tags.all()
 
         return encoder.encode(result)
+
+    def _set_tags(self, request, record):
+        tags = self._extract_tags(request)
+        if tags:
+            record.tags.set(*tags) 
 
     def _save(self, record):
         try:
@@ -92,6 +92,15 @@ class ModelEndpoint(object):
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
+    def _extract_tags(self, request):
+        try:
+            tags = [t.strip() for t in
+                smart_str(request.POST['tags']).split(',')]
+        except Exception, e:
+            tags = []
+
+        return tags
+
     def _extract_data(self, request):
         """Extract data from POST.
 
@@ -104,15 +113,13 @@ class ModelEndpoint(object):
         """
         data = {}
         for field, val in request.POST.iteritems():
-            try:
+            if field in self.fields:
                 f = self.model._meta.get_field(field)
                 val = self._extract_value(val)
                 if val and isinstance(f, models.ForeignKey):
                     data[smart_str(field)] = f.rel.to.objects.get(pk=val)
                 else:
                     data[smart_str(field)] = val
-            except FieldDoesNotExist:
-                pass
 
         return data
 
