@@ -70,7 +70,7 @@ class ModelEndpoint(object):
         if self.can_update(request.user, record):
             for key, val in self._extract_data(request).iteritems():
                 setattr(record, key, val)
-
+            self._set_tags(request, record)
             return encoder.encode(self._save(record))
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
