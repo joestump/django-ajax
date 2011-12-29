@@ -70,7 +70,8 @@ class ModelEndpoint(object):
         if self.can_update(request.user, record):
             for key, val in self._extract_data(request).iteritems():
                 setattr(record, key, val)
-            self._set_tags(request, record)
+            if 'tags' in request.POST:
+                self._set_tags(request, record)
             return encoder.encode(self._save(record))
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
@@ -94,8 +95,11 @@ class ModelEndpoint(object):
 
     def _extract_tags(self, request):
         try:
-            tags = [t.strip() for t in
-                smart_str(request.POST['tags']).split(',')]
+            tags = []
+            for t in smart_str(request.POST['tags']).split(','):
+                t = t.strip()
+                if len(t) > 0:
+                    tags.append(t)
         except Exception, e:
             tags = []
 
