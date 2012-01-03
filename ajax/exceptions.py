@@ -37,4 +37,3 @@ class AJAXError(Exception):
         response = self.RESPONSES[self.code]()
         response.content = json.dumps(error, indent=4)
         return response
-

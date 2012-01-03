@@ -18,6 +18,8 @@ class ModelEndpoint(object):
         'null': None
     }
 
+    immutable_fields = []  # List of model fields that are not writable.
+
     def __init__(self, application, model, method, **kwargs):
         self.application = application
         self.model = model
@@ -113,6 +115,9 @@ class ModelEndpoint(object):
         """
         data = {}
         for field, val in request.POST.iteritems():
+            if field in self.immutable_fields:
+                raise AJAXError(400, '%s is immutable.')
+
             if field in self.fields:
                 f = self.model._meta.get_field(field)
                 val = self._extract_value(val)
