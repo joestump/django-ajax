@@ -120,7 +120,7 @@ class ModelEndpoint(object):
         data = {}
         for field, val in request.POST.iteritems():
             if field in self.immutable_fields:
-                raise AJAXError(400, '%s is immutable.')
+                raise AJAXError(400, '%s is immutable.' % field)
 
             if field in self.fields:
                 f = self.model._meta.get_field(field)
