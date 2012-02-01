@@ -93,4 +93,4 @@ def endpoint_loader(request, application, model, **kwargs):
     if isinstance(data, HttpResponse):
         return data
     else:
-        return HttpResponse(json.dumps(data, indent=4, cls=DjangoJSONEncoder))
+        return HttpResponse(json.dumps(data, cls=DjangoJSONEncoder, separators=(',', ':')))

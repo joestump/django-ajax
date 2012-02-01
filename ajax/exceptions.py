@@ -35,5 +35,5 @@ class AJAXError(Exception):
         error.update(self.extra)
 
         response = self.RESPONSES[self.code]()
-        response.content = json.dumps(error, indent=4)
+        response.content = json.dumps(error, separators=(',', ':'))
         return response
