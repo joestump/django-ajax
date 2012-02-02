@@ -20,17 +20,6 @@ def require_pk(func, *args, **kwargs):
     return func(*args, **kwargs)
 
 
-def allowed_methods(allowed_methods=['get','post','update','create','list']):
-
-    def decorator(func):
-        def inner_decorator(request,*args, **kwargs):
-            if not request.method in allowed_methods:
-                raise AJAXError(403, _('Access denied.'))
-        
-        return wraps(func)(inner_decorator)
-    return decorator   
-    
-
 def allowed_methods(request_method_list=['get','post','update','create','list']):
     
     def decorator(func):
