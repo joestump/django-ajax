@@ -86,6 +86,8 @@ def endpoint_loader(request, application, model, **kwargs):
                 raise AJAXError(403, _('User is not authorized.'))
 
             endpoint = getattr(model_endpoint, method)
+            if not callable(endpoint):
+                raise AJAXError(500, _('Invalid method.'))    
         except NotRegistered:
             raise AJAXError(500, _('Invalid model.'))
 
