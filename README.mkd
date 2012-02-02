@@ -88,6 +88,7 @@ AJAX also offers a class, called `ModelEndpoint`, that takes a Django model and 
 You can then send a POST to:
 
 * `/ajax/my_app/category.json` to create a new `Category`.
+* `/ajax/my_app/category/list.json` to get a list of Category. Additionally, you can POST `items_per_page` (default is 20) and `current_page` (default is 1).
 * `/ajax/my_app/category/{pk}/update.json` to update a `Category`. `pk` must be present in the path for `update`, `delete`, and `get`. **NOTE:** This package assumes that the `pk` argument is an integer of some sort. If you've mangled your `pk` fields in weird ways, this likely will not work as expected.
 * `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
 * `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
