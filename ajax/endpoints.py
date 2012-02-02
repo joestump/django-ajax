@@ -6,10 +6,10 @@ from django.utils.encoding import smart_str
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.fields import FieldDoesNotExist
 from ajax.decorators import require_pk
-from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
-    PrimaryKeyMissing
+from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, PrimaryKeyMissing
 from ajax.encoders import encoder
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+import simplejson
 
 class ModelEndpoint(object):
     _value_map = {
@@ -51,6 +51,35 @@ class ModelEndpoint(object):
             result = record.tags.all()
 
         return encoder.encode(result)
+
+    def list(self,request):
+        """
+        List objects of a model. By default will show page 1 with 20 objects on it. 
+        
+        **Usage**::
+        
+            params = {"items_per_page":10,"page":2} //all params are optional
+            $.post("/ajax/{app}/{model}/list.json"),params)
+        
+        """
+
+        items_per_page = request.POST.get("items_per_page",20)
+        current_page = request.POST.get("current_page",1)
+        objects = self.model.objects.all()
+        
+        paginator = Paginator(objects, items_per_page)
+
+        try:
+            page = paginator.page(current_page)
+        except PageNotAnInteger:
+            # If page is not an integer, deliver first page.
+            page = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range (e.g. 9999), deliver last page of results.
+            page = paginator.page(paginator.num_pages)
+        
+        response = serializers.serialize("json", page.object_list)
+        return simplejson.loads(response)
 
     def _set_tags(self, request, record):
         tags = self._extract_tags(request)

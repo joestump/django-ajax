@@ -156,6 +156,8 @@ There are a number of security features inherent in the framework along with way
 
 ## Decorators
 
+#### ajax.decorators.login_required
+
 The AJAX package offers a familiar decorator in `ajax.decorators` called `login_required`. It works in the same way that the Django decorator does and handles throwing a proper `AJAXError` if the user isn't logged in.
 
     from ajax.decorators import login_required
@@ -165,6 +167,15 @@ The AJAX package offers a familiar decorator in `ajax.decorators` called `login_
         return {
             'Hello, %s!' % request.user.username
         }
+
+#### ajax.decorators.allowed_methods
+You can limit methods that are allowed on your `ModelEndpoint` by decorating your overridden ModelEndpoint.authenticate() method with the `allowed_methods` decorator. If a user tries to access a disallowed method, then they will receive an `AJAXError`. 
+
+	from ajax.decorators import allowed_methods
+
+	@allowed_methods(['get','update','list'])
+	def authenticate(self,request):
+		...
 
 ## ModelEndpoint
 

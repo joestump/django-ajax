@@ -1,6 +1,8 @@
 from django.utils.translation import ugettext as _
 from decorator import decorator
 from ajax.exceptions import AJAXError, PrimaryKeyMissing
+from functools import wraps
+from django.utils.decorators import available_attrs
 
 @decorator
 def login_required(f, *args, **kwargs):
@@ -17,3 +19,26 @@ def require_pk(func, *args, **kwargs):
 
     return func(*args, **kwargs)
 
+
+def allowed_methods(allowed_methods=['get','post','update','create','list']):
+
+    def decorator(func):
+        def inner_decorator(request,*args, **kwargs):
+            if not request.method in allowed_methods:
+                raise AJAXError(403, _('Access denied.'))
+        
+        return wraps(func)(inner_decorator)
+    return decorator   
+    
+
+def allowed_methods(request_method_list=['get','post','update','create','list']):
+    
+    def decorator(func):
+        @wraps(func, assigned=available_attrs(func))
+        def inner(request, *args, **kwargs):
+            if request.method not in request_method_list:
+                raise AJAXError(403, _('Access denied.'))
+            return func(request, *args, **kwargs)
+        return inner
+    return decorator        
+    
