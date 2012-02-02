@@ -169,13 +169,15 @@ The AJAX package offers a familiar decorator in `ajax.decorators` called `login_
         }
 
 #### ajax.decorators.allowed_methods
-You can limit methods that are allowed on your `ModelEndpoint` by decorating your overridden ModelEndpoint.authenticate() method with the `allowed_methods` decorator. If a user tries to access a disallowed method, then they will receive an `AJAXError`. 
+You can limit methods that are allowed on your `ModelEndpoint` by decorating your overriding ModelEndpoint.authenticate() method with the `allowed_methods` decorator. If a user tries to access a disallowed method, then they will receive an `AJAXError`. 
 
 	from ajax.decorators import allowed_methods
 
-	@allowed_methods(['get','update','list'])
-	def authenticate(self,request):
-		...
+    class CategoryEndpoint(ajax.endpoints.ModelEndpoint):
+
+    	@allowed_methods(['get','update','list'])
+    	def authenticate(self,request):
+    		...
 
 ## ModelEndpoint
 
