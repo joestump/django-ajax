@@ -46,6 +46,13 @@ From JavaScript you can easily access the endpoint using jQuery.
 
 You can also create endpoints from callable objects. The `BaseEndpoint` class has two functions that are pretty helpful for encoding Django a `QuerySet` or an instance of `Model`.
 
+	# BaseEndpoint._encode_*` appears to have been depricated. 
+	# You should use ajax.encoders.encoder in the future:
+
+	from ajax.encoders import encoder
+	encoder.encode(record)
+
+
 * `BaseEndpoint._encode_data` takes a single argument, `data`, which it assumes to be a `QuerySet` (or something that looks and acts like one) and converts it into a vanilla list capable of being serialized using `simplejson`. This uses Django's Python serializer and does some minor cleanup to make it a sane looking JSON payload.
 * `BaseEndpoint._encode_record` takes a Django `Model` and encodes it into a normal Python dict. Additionally, it looks for `ForeignKey`'s and hydrates them to include the full associated record.
 
@@ -85,6 +92,35 @@ You can then send a POST to:
 * `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
 * `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
 
+### Adding Ad-hoc endpoints to ModelEndpoints
+
+You can also add you own custom methods to a ModelEndpoint. Adhoc methods in a ModelEndpoint observe the same rules as the get(), update() and delete() methods - with the noticable exception that self.pk _may_ not be set.
+
+For example, you could add a method called `about` that will display some info about the Model or Record (just used for illustration: not actually a good idea in real life):
+
+	import ajax
+    from my_app.models import Category
+    
+    class CategoryEndpoint(ajax.endpoints.ModelEndpoint):	
+		
+		...
+		
+		def about(self,request):
+			pk = self.pk
+        	if pk:
+           		return {"message" : "run an operation on record: %s"%self._get_record()}        
+        	else:
+           		return {"message" : "run an operation on model: %s"%self.model.__name__}
+			
+Now, in addition to the endpoints above, this method would be available at:
+
+* `/ajax/my_app/category/about.json` - would return "run an operation on model: ..."
+
+or
+
+* `/ajax/my_app/category/{pk}/about.json` - would return "run an operation on record: ..."
+
+
 ### ForeignKey while Fetching
 
 It should be noted that the AJAX package takes a liberal approach when it comes to instances of `ForeignKey` it finds in model declarations. If a model that has a `ForeignKey` is fetched it will be expanded to the full record, recursively. For instance, if a `ForeignKey` to `User` is in a given model, you will get the *whole* associated `User` record when a row is fetched.
@@ -104,6 +140,10 @@ The popular [django-taggit](https://github.com/alex/django-taggit/) is great for
 * `/ajax/my_app/mymodel/{pk}/tags/similar.json` will fetch objects that are similarly tagged to the `pk` specified.
 
 **NOTE:** The filtering options in the `django-taggit` API are not available via AJAX at this point.
+
+
+
+
 
 # Security
 
