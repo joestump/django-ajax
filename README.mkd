@@ -107,10 +107,10 @@ For example, you could add a method called `about` that will display some info a
 		
 		def about(self,request):
 			pk = self.pk
-        		if pk:
-            		return {"message" : "run an operation on record: %s"%self._get_record()}        
-        		else:
-            		return {"message" : "run an operation on model: %s"%self.model.__name__}
+        	if pk:
+           		return {"message" : "run an operation on record: %s"%self._get_record()}        
+        	else:
+           		return {"message" : "run an operation on model: %s"%self.model.__name__}
 			
 Now, in addition to the endpoints above, this method would be available at:
 
