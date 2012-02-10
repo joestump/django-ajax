@@ -78,7 +78,7 @@ class ModelEndpoint(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             page = paginator.page(paginator.num_pages)
         
-        response = serializers.serialize("json", page.object_list)
+        return [encoder.encode(record) for record in page.object_list]
         return simplejson.loads(response)
 
     def _set_tags(self, request, record):
