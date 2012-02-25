@@ -8,6 +8,10 @@ from django.utils.encoding import smart_str
 import collections
 
 
+def _fields_from_model(model):
+    return [field.name for field in model.__class__._meta.fields]
+
+
 class DefaultEncoder(object):
     _mapping = {
         'IntegerField': int,
@@ -15,9 +19,18 @@ class DefaultEncoder(object):
         'AutoField': int,
         'FloatField': float,
     }
-    def to_dict(self, record, expand=False, html_escape=False):
+
+    def to_dict(self, record, expand=False, html_escape=False, fields=None):
         self.html_escape = html_escape
-        data = serializers.serialize('python', [record])[0]
+        if hasattr(record, '__exclude__') and callable(record.__exclude__):
+            try:
+                exclude = record.__exclude__()
+                if fields is None:
+                    fields = _fields_from_model(record)
+                fields = set(fields) - set(exclude)
+            except TypeError:
+                pass
+        data = serializers.serialize('python', [record], fields=fields)[0]
 
         if hasattr(record, 'extra_fields'):
             ret = record.extra_fields
@@ -88,15 +101,8 @@ class ExcludeEncoder(DefaultEncoder):
         self.exclude = exclude
 
     def __call__(self, record, html_escape=False):
-        data = self.to_dict(record, html_escape=html_escape)
-        final = {}
-        for key, val in data.iteritems():
-            if key in self.exclude:
-                continue
-
-            final[key] = val
-
-        return final
+        fields = set(_fields_from_model(record)) - set(self.exclude)
+        return self.to_dict(record, html_escape=html_escape, fields=fields)
 
 
 class IncludeEncoder(DefaultEncoder):
@@ -104,15 +110,7 @@ class IncludeEncoder(DefaultEncoder):
         self.include = include
 
     def __call__(self, record, html_escape=False):
-        data = self.to_dict(record, html_escape=html_escape)
-        final = {}
-        for key, val in data.iteritems():
-            if key not in self.include:
-                continue
-
-            final[key] = val
-
-        return final
+        return self.to_dict(record, html_escape=html_escape, fields=self.include)
 
 
 class Encoders(object):
