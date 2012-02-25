@@ -2,10 +2,15 @@ from django.core import serializers
 from ajax.exceptions import AlreadyRegistered, NotRegistered
 from django.db.models.fields import FieldDoesNotExist
 from django.db import models
+from django.conf import settings
 from django.utils.html import escape
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 import collections
+
+
+# Used to change the field name for the Model's pk.
+AJAX_PK_ATTR_NAME = getattr(settings, 'AJAX_PK_ATTR_NAME', 'pk')
 
 
 class DefaultEncoder(object):
@@ -25,7 +30,7 @@ class DefaultEncoder(object):
             ret = {}
 
         ret.update(data['fields'])
-        ret['pk'] = data['pk']
+        ret[AJAX_PK_ATTR_NAME] = data['pk']
 
         for field, val in ret.iteritems():
             try:
