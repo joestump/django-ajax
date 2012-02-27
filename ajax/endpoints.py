@@ -1,4 +1,3 @@
-from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import simplejson as json
@@ -78,8 +77,7 @@ class ModelEndpoint(object):
             # If page is out of range (e.g. 9999), deliver last page of results.
             page = paginator.page(paginator.num_pages)
         
-        return [encoder.encode(record) for record in page.object_list]
-        return simplejson.loads(response)
+        return [encoder.encode(record) for record in page.object_list]        
 
     def _set_tags(self, request, record):
         tags = self._extract_tags(request)
