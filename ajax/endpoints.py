@@ -8,7 +8,7 @@ from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, PrimaryKeyMissing
 from ajax.encoders import encoder
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import simplejson
+from django.conf import settings
 
 class ModelEndpoint(object):
     _value_map = {
@@ -62,8 +62,11 @@ class ModelEndpoint(object):
         
         """
 
-        items_per_page = request.POST.get("items_per_page",20)
-        current_page = request.POST.get("current_page",1)
+        #it might be nice to be able to set this on the model itself, perhaps in _meta
+        max_items_per_page = getattr(settings,'AJAX_MAX_PER_PAGE',100)
+        requested_items_per_page = request.POST.get("items_per_page",20)
+        items_per_page = min(max_items_per_page,requested_items_per_page)        
+        current_page = request.POST.get("current_page",1)        
         objects = self.model.objects.all()
         
         paginator = Paginator(objects, items_per_page)

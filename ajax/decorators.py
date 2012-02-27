@@ -20,8 +20,8 @@ def require_pk(func, *args, **kwargs):
     return func(*args, **kwargs)
 
 
-def allowed_methods(request_method_list=['get','post','update','create','list']):
-    
+def allowed_methods(*args,**kwargs):
+    request_method_list = args
     def decorator(func):
         @wraps(func, assigned=available_attrs(func))
         def inner(request, *args, **kwargs):
