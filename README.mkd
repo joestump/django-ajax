@@ -13,6 +13,12 @@ Additionally, this package allows you to create AJAX endpoints for manipulating 
 
 There are no models associated with this package so you don't need to worry about syncing your database or anything.
 
+## Settings
+
+You can add the following settings to `settings.py` :
+
+* `AJAX_MAX_PER_PAGE` (optional: defaults to 100). Sets the maximum number of objects that can be returned per page using the built-in `list` method on a `ModelEndpoint`
+
 # Usage
 
 You can use this package to create ad-hoc AJAX endpoints or by exposing your Django applications's models via AJAX.
@@ -176,7 +182,7 @@ You can limit methods that are allowed on your `ModelEndpoint` by decorating you
 
     class CategoryEndpoint(ajax.endpoints.ModelEndpoint):
 
-    	@allowed_methods(['get','update','list'])
+    	@allowed_methods('get','update','list')
     	def authenticate(self,request):
     		...
 
