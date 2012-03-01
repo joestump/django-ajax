@@ -9,6 +9,7 @@ from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
     PrimaryKeyMissing
 from ajax.encoders import encoder
+from taggit.utils import parse_tags
 
 
 class ModelEndpoint(object):
@@ -32,7 +33,11 @@ class ModelEndpoint(object):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user, record):
             record = self._save(record)
-            self._set_tags(request, record)
+            try:
+                tags = self._extract_tags(request)
+                record.tags.set(*tags)
+            except KeyError:
+                pass
             return encoder.encode(record)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
@@ -46,16 +51,14 @@ class ModelEndpoint(object):
         if cmd == 'similar':
             result = record.tags.similar_objects()
         else:
-            tags = self._extract_tags(request)
-            getattr(record.tags, cmd)(*tags)
+            try:
+                tags = self._extract_tags(request)
+                getattr(record.tags, cmd)(*tags)
+            except KeyError:
+                pass  # No tags to set/manipulate in this request.
             result = record.tags.all()
 
         return encoder.encode(result)
-
-    def _set_tags(self, request, record):
-        tags = self._extract_tags(request)
-        if tags:
-            record.tags.set(*tags) 
 
     def _save(self, record):
         try:
@@ -72,9 +75,21 @@ class ModelEndpoint(object):
         if self.can_update(request.user, record):
             for key, val in self._extract_data(request).iteritems():
                 setattr(record, key, val)
-            if 'tags' in request.POST:
-                self._set_tags(request, record)
-            return encoder.encode(self._save(record))
+
+            self._save(record)
+
+            try:
+                tags = self._extract_tags(request)
+                if tags:
+                    record.tags.set(*tags)
+                else:
+                    # If tags were in the request and set to nothing, we will
+                    # clear them all out.
+                    record.tags.clear()
+            except KeyError:
+                pass
+
+            return encoder.encode(record)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
@@ -96,14 +111,16 @@ class ModelEndpoint(object):
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
     def _extract_tags(self, request):
-        try:
-            tags = []
-            for t in smart_str(request.POST['tags']).split(','):
-                t = t.strip()
-                if len(t) > 0:
-                    tags.append(t)
-        except Exception, e:
-            tags = []
+        # We let this throw a KeyError so that calling functions will know if
+        # there were NO tags in the request or if there were, but that the 
+        # call had an empty tags list in it.
+        raw_tags = request.POST['tags']
+        tags = []
+        if raw_tags:
+            try:
+                tags = [t for t in parse_tags(raw_tags) if len(t)]
+            except Exception, e:
+                pass
 
         return tags
 
