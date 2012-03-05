@@ -4,14 +4,18 @@ from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseServerError, \
     HttpResponseBadRequest
 
+
 class AlreadyRegistered(Exception):
     pass
+
 
 class NotRegistered(Exception):
     pass
 
+
 class PrimaryKeyMissing(Exception):
     pass
+
 
 class AJAXError(Exception):
     RESPONSES = {
@@ -29,8 +33,11 @@ class AJAXError(Exception):
 
     def get_response(self):
         error = {
-            'code': self.code,
-            'message': smart_str(self.msg)
+            'success': False,
+            'data': {
+                'code': self.code,
+                'message': smart_str(self.msg)
+            }
         }
         error.update(self.extra)
 

@@ -21,9 +21,14 @@ class AJAXDebugToolbarMiddleware(DebugToolbarMiddleware):
     """
     def _append_json(self, response, toolbar):
         payload = json.loads(response.content)
-        payload['debug_toolbar'] = toolbar.stats['sql']
-        response.content = json.dumps(payload, indent=4,
-            cls=AJAXDebugToolbarJSONEncoder)
+        payload['debug_toolbar'] = {
+            'sql': toolbar.stats['sql']
+        }
+        try:
+            response.content = json.dumps(payload, indent=4,
+                cls=AJAXDebugToolbarJSONEncoder)
+        except:
+            pass
         return response
 
 
