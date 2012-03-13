@@ -2,15 +2,18 @@ from django.http import HttpResponse, Http404
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
 from django.utils.importlib import import_module
+from django.utils.log import getLogger
 from django.core.serializers.json import DjangoJSONEncoder
 from django.conf import settings
 from decorator import decorator
 from ajax.exceptions import AJAXError, NotRegistered
 import ajax
 
+logger = getLogger('django.request')
+
 
 @decorator
-def json_response(f, *args, **kwargs):
+def json_response(f, request, *args, **kwargs):
     """Wrap a view in JSON.
 
     This decorator runs the given function and looks out for ajax.AJAXError's,
@@ -29,7 +32,7 @@ def json_response(f, *args, **kwargs):
     to the client if a non-AJAXError is thrown.
     """ 
     try:
-        result = f(*args, **kwargs)
+        result = f(request, *args, **kwargs)
         if isinstance(result, AJAXError):
             raise result
     except AJAXError, e:
@@ -38,7 +41,8 @@ def json_response(f, *args, **kwargs):
         result = AJAXError(404, e.__str__()).get_response()
     except Exception, e:
         import sys
-        type, message, trace = sys.exc_info()
+        exc_info = sys.exc_info()
+        type, message, trace = exc_info
         if True or settings.DEBUG:
             import traceback 
             tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for 
@@ -46,6 +50,14 @@ def json_response(f, *args, **kwargs):
             result = AJAXError(500, message, traceback=tb).get_response()
         else:
             result = AJAXError(500, message).get_response()
+
+        logger.error('Internal Server Error: %s' % request.path,
+            exc_info=exc_info,
+            extra={
+                'status_code': 500,
+                'request': request
+            }
+        )
 
     result['Content-Type'] = 'application/json'
     return result
