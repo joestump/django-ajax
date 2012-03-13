@@ -13,7 +13,7 @@ logger = getLogger('django.request')
 
 
 @decorator
-def json_response(f, request, *args, **kwargs):
+def json_response(f, *args, **kwargs):
     """Wrap a view in JSON.
 
     This decorator runs the given function and looks out for ajax.AJAXError's,
@@ -32,7 +32,7 @@ def json_response(f, request, *args, **kwargs):
     to the client if a non-AJAXError is thrown.
     """ 
     try:
-        result = f(request, *args, **kwargs)
+        result = f(*args, **kwargs)
         if isinstance(result, AJAXError):
             raise result
     except AJAXError, e:
@@ -51,6 +51,7 @@ def json_response(f, request, *args, **kwargs):
         else:
             result = AJAXError(500, message).get_response()
 
+        request = args[0]
         logger.error('Internal Server Error: %s' % request.path,
             exc_info=exc_info,
             extra={
