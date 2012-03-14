@@ -1,3 +1,6 @@
+import sys
+sys.path.insert(0, '../')
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 

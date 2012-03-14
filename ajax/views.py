@@ -2,10 +2,14 @@ from django.http import HttpResponse
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
 from django.utils.importlib import import_module
+from django.utils.log import getLogger
 from django.core.serializers.json import DjangoJSONEncoder
 from ajax.exceptions import AJAXError, NotRegistered
 from ajax.decorators import json_response
 import ajax
+
+
+logger = getLogger('django.request')
 
 
 @json_response

@@ -48,16 +48,25 @@ def json_response(f, *args, **kwargs):
     except Http404, e:
         result = AJAXError(404, e.__str__()).get_response()
     except Exception, e:
-        if settings.DEBUG or \
-            (args[0].user.is_authenticated() and args[0].user.is_superuser):
-            import sys
-            type, message, trace = sys.exc_info()
+        import sys
+        exc_info = sys.exc_info()
+        type, message, trace = exc_info
+        if settings.DEBUG:
             import traceback 
             tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for 
                 l in traceback.extract_tb(trace)]
-            result = AJAXError(500, str(e), traceback=tb).get_response()
+            result = AJAXError(500, message, traceback=tb).get_response()
         else:
             result = AJAXError(500, "Internal server error.").get_response()
+
+        request = args[0]
+        logger.error('Internal Server Error: %s' % request.path,
+            exc_info=exc_info,
+            extra={
+                'status_code': 500,
+                'request': request
+            }
+        )
 
     result['Content-Type'] = 'application/json'
     return result
