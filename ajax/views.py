@@ -1,9 +1,8 @@
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
 from django.utils.importlib import import_module
 from django.core.serializers.json import DjangoJSONEncoder
-from django.conf import settings
 from ajax.exceptions import AJAXError, NotRegistered
 from ajax.decorators import json_response
 import ajax

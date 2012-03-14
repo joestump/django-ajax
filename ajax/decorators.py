@@ -1,4 +1,6 @@
 from django.utils.translation import ugettext as _
+from django.http import Http404
+from django.conf import settings
 from decorator import decorator
 from ajax.exceptions import AJAXError, PrimaryKeyMissing
 
@@ -53,9 +55,9 @@ def json_response(f, *args, **kwargs):
             import traceback 
             tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for 
                 l in traceback.extract_tb(trace)]
-            result = AJAXError(500, message, traceback=tb).get_response()
+            result = AJAXError(500, str(e), traceback=tb).get_response()
         else:
-            result = AJAXError(500, message).get_response()
+            result = AJAXError(500, "Internal server error.").get_response()
 
     result['Content-Type'] = 'application/json'
     return result
