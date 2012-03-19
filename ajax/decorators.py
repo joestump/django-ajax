@@ -1,8 +1,13 @@
 from django.utils.translation import ugettext as _
+from django.utils.log import getLogger
 from django.http import Http404
 from django.conf import settings
 from decorator import decorator
 from ajax.exceptions import AJAXError, PrimaryKeyMissing
+
+
+logger = getLogger('django.request')
+
 
 @decorator
 def login_required(f, *args, **kwargs):

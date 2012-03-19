@@ -13,16 +13,14 @@ class AJAXDebugToolbarMiddleware(DebugToolbarMiddleware):
 
     This middleware overrides the DebugToolbarMiddleware.process_response() to
     return the toolbar data in the AJAX response if the request was an AJAX
-    request. This allows for debugging via the browser console using data from the
-    django-debug-toolbar panels.
-
-    Sadly, I couldn't easily just override the logic in DebugToolbarMiddleware so
-    I had to copy process_response here.
+    request. This allows for debugging via the browser console using data from 
+    the django-debug-toolbar panels.
     """
     def _append_json(self, response, toolbar):
         payload = json.loads(response.content)
         payload['debug_toolbar'] = {
-            'sql': toolbar.stats['sql']
+            'sql': toolbar.stats['sql'],
+            'timer': toolbar.stats['timer']
         }
         try:
             response.content = json.dumps(payload, indent=4,
