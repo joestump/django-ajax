@@ -58,8 +58,8 @@ class EndpointTests(BaseTest):
         """Test the ad-hoc echo endpoint."""
         resp, content = self.post('/ajax/example/echo.json',
             {'name': 'Joe Stump', 'age': 31})
-        self.assertEquals('Joe Stump', content['name'])
-        self.assertEquals('31', content['age'])
+        self.assertEquals('Joe Stump', content['data']['name'])
+        self.assertEquals('31', content['data']['age'])
 
     def test_logged_out_user_fails(self):
         """Make sure @login_required rejects requests to echo."""
