@@ -9,7 +9,12 @@ from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
     PrimaryKeyMissing
 from ajax.encoders import encoder
-from taggit.utils import parse_tags
+
+
+try:
+    from taggit.utils import parse_tags
+except ImportError:
+    parse_tags = lambda: raise AJAXError(500, 'Taggit required: http://bit.ly/RE0dr9')
 
 
 class ModelEndpoint(object):
