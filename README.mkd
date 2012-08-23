@@ -92,6 +92,8 @@ You can then send a POST to:
 * `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
 * `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
 
+**NOTE:** Your Model name (e.g. `category` in the above example) *must* be lowercase. Your request will fail otherwise.
+
 ### Adding Ad-hoc endpoints to ModelEndpoints
 
 You can also add you own custom methods to a ModelEndpoint. Adhoc methods in a ModelEndpoint observe the same rules as the get(), update() and delete() methods - with the noticable exception that self.pk _may_ not be set.
