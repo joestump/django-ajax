@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.http import HttpResponse
 from django.utils import simplejson as json
 from django.utils.translation import ugettext as _
@@ -27,7 +28,10 @@ def endpoint_loader(request, application, model, **kwargs):
     try:
         module = import_module('%s.endpoints' % application)
     except ImportError, e:
-        raise AJAXError(404, _('AJAX endpoint does not exist.'))
+        if settings.DEBUG:
+            raise e
+        else:
+            raise AJAXError(404, _('AJAX endpoint does not exist.'))
 
     if hasattr(module, model):
         # This is an ad-hoc endpoint
