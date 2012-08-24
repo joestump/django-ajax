@@ -14,7 +14,8 @@ from ajax.encoders import encoder
 try:
     from taggit.utils import parse_tags
 except ImportError:
-    parse_tags = lambda: raise AJAXError(500, 'Taggit required: http://bit.ly/RE0dr9')
+    def parse_tags(tagstring):
+        raise AJAXError(500, 'Taggit required: http://bit.ly/RE0dr9')
 
 
 class ModelEndpoint(object):
