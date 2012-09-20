@@ -55,7 +55,7 @@ def json_response(f, *args, **kwargs):
         logger.warn('AJAXError: %d %s - %s', e.code, request.path, e.msg,
             exc_info=True,
             extra={
-                'status_code': 500,
+                'status_code': e.code,
                 'request': request
             }
         )
