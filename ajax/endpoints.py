@@ -78,24 +78,25 @@ class ModelEndpoint(object):
     @require_pk
     def update(self, request):
         record = self._get_record()
-        if self.can_update(request.user, record):
-            for key, val in self._extract_data(request).iteritems():
-                setattr(record, key, val)
+        modified = self._get_record()
+        for key, val in self._extract_data(request).iteritems():
+            setattr(modified, key, val)
+        if self.can_update(request.user, record, modified=modified):
 
-            self._save(record)
+            self._save(modified)
 
             try:
                 tags = self._extract_tags(request)
                 if tags:
-                    record.tags.set(*tags)
+                    modified.tags.set(*tags)
                 else:
                     # If tags were in the request and set to nothing, we will
                     # clear them all out.
-                    record.tags.clear()
+                    modified.tags.clear()
             except KeyError:
                 pass
 
-            return encoder.encode(record)
+            return encoder.encode(modified)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
@@ -118,7 +119,7 @@ class ModelEndpoint(object):
 
     def _extract_tags(self, request):
         # We let this throw a KeyError so that calling functions will know if
-        # there were NO tags in the request or if there were, but that the 
+        # there were NO tags in the request or if there were, but that the
         # call had an empty tags list in it.
         raw_tags = request.POST['tags']
         tags = []
