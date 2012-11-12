@@ -37,19 +37,28 @@ def json_response(f, *args, **kwargs):
     body that you can inspect in JavaScript on the client. They look like:
 
     {
-        "message": "Error message here.", 
+        "message": "Error message here.",
         "code": 500
     }
 
     Please keep in mind that raw exception messages could very well be exposed
     to the client if a non-AJAXError is thrown.
-    """ 
+    """
     try:
         result = f(*args, **kwargs)
         if isinstance(result, AJAXError):
             raise result
     except AJAXError, e:
         result = e.get_response()
+
+        request = args[0]
+        logger.warn('AJAXError: %d %s - %s', e.code, request.path, e.msg,
+            exc_info=True,
+            extra={
+                'status_code': e.code,
+                'request': request
+            }
+        )
     except Http404, e:
         result = AJAXError(404, e.__str__()).get_response()
     except Exception, e:
@@ -57,8 +66,8 @@ def json_response(f, *args, **kwargs):
         exc_info = sys.exc_info()
         type, message, trace = exc_info
         if settings.DEBUG:
-            import traceback 
-            tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for 
+            import traceback
+            tb = [{'file': l[0], 'line': l[1], 'in': l[2], 'code': l[3]} for
                 l in traceback.extract_tb(trace)]
             result = AJAXError(500, message, traceback=tb).get_response()
         else:

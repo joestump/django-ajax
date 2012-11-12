@@ -17,7 +17,7 @@ logger = getLogger('django.request')
 def endpoint_loader(request, application, model, **kwargs):
     """Load an AJAX endpoint.
 
-    This will load either an ad-hoc endpoint or it will load up a model 
+    This will load either an ad-hoc endpoint or it will load up a model
     endpoint depending on what it finds. It first attempts to load ``model``
     as if it were an ad-hoc endpoint. Alternatively, it will attempt to see if
     there is a ``ModelEndpoint`` for the given ``model``.
@@ -50,10 +50,10 @@ def endpoint_loader(request, application, model, **kwargs):
             if not model_endpoint.authenticate(request, application, method):
                 raise AJAXError(403, _('User is not authorized.'))
 
-            endpoint = getattr(model_endpoint, method,False)
-            
+            endpoint = getattr(model_endpoint, method, False)
+
             if not endpoint:
-                raise AJAXError(404, _('Invalid method.'))    
+                raise AJAXError(404, _('Invalid method.'))
         except NotRegistered:
             raise AJAXError(500, _('Invalid model.'))
 
