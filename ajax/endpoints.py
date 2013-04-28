@@ -178,7 +178,7 @@ class ModelEndpoint(object):
     def can_get(self, user, record):
         return True
 
-    def _user_is_active_or_staff(self, user, record):
+    def _user_is_active_or_staff(self, user, record, **kwargs):
         return ((user.is_authenticated() and user.is_active) or user.is_staff)
 
     can_create = _user_is_active_or_staff
