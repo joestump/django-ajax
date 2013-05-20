@@ -9,6 +9,7 @@ from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
     PrimaryKeyMissing
 from ajax.encoders import encoder
+from ajax.signals import ajax_created, ajax_deleted, ajax_updated
 
 
 try:
@@ -44,6 +45,8 @@ class ModelEndpoint(object):
                 record.tags.set(*tags)
             except KeyError:
                 pass
+
+            ajax_created.send(sender=record.__class__, instance=record)
             return encoder.encode(record)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
@@ -96,6 +99,7 @@ class ModelEndpoint(object):
             except KeyError:
                 pass
 
+            ajax_updated.send(sender=record.__class__, instance=record)
             return encoder.encode(modified)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
@@ -105,6 +109,7 @@ class ModelEndpoint(object):
         record = self._get_record()
         if self.can_delete(request.user, record):
             record.delete()
+            ajax_deleted.send(sender=record.__class__, instance=record)
             return {'pk': int(self.pk)}
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
