@@ -7,7 +7,10 @@ Additionally, this package allows you to create AJAX endpoints for manipulating 
 # Install
 
 1. Make sure you have the [decorator](http://pypi.python.org/pypi/decorator) package installed.
-2. Install the `ajax/` directory as you would any other application in your Django project or put it in your Django project's `sys.path` somewhere. 
+2. Install the `ajax/` directory as you would any other application in your Django project or put it in your Django project's `sys.path` somewhere. The easiest way to install is through pip:
+```
+pip install -e git://github.com/joestump/django-ajax#egg=django-ajax
+```
 3. Add `ajax` to `INSTALLED_APPS` in your `settings.py`.
 4. In your Django project's `urls.py` add `(r'^ajax/', include('ajax.urls'))`.
 
