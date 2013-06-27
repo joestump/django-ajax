@@ -37,21 +37,22 @@ class BaseTest(TestCase):
 
         return (response, json.loads(response.content))
 
+
 class EncodeTests(BaseTest):
     def test_encode(self):
         from ajax.encoders import encoder
         widget = Widget.objects.get(pk=1)
-        self.assertEquals(widget.title,'Iorem lipsum color bit amit')
+        self.assertEquals(widget.title, 'Iorem lipsum color bit amit')
         encoded = encoder.encode(widget)
-        for k in ('title','active','description'):
-            self.assertEquals(encoded[k],getattr(widget,k))
+        for k in ('title', 'active', 'description'):
+            self.assertEquals(encoded[k], getattr(widget, k))
         widgets = Widget.objects.all()
         all_encoded = encoder.encode(widgets)
         for encoded in all_encoded:
             widget = Widget.objects.get(pk=encoded['pk'])
-            for k in ('title','active','description'):
-                self.assertEquals(encoded[k],getattr(widget,k))
-        
+            for k in ('title', 'active', 'description'):
+                self.assertEquals(encoded[k], getattr(widget, k))
+
 
 class EndpointTests(BaseTest):
     def test_echo(self):
@@ -66,3 +67,9 @@ class EndpointTests(BaseTest):
         self.client.logout()
         resp, content = self.post('/ajax/example/echo.json', {},
             status_code=403)
+
+
+class BaseAuthenticationTests(BaseTest):
+    def test_default_auth(self):
+        resp, content = self.post('/ajax/example/widget/1/get.json', {},
+            status_code=200)
