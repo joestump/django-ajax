@@ -1,15 +1,13 @@
+from django.core import serializers
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext_lazy as _
-from ajax.compat import path_to_import
-from ajax.conf import settings
+from django.db.models.fields import FieldDoesNotExist
 from ajax.decorators import require_pk
-from ajax.exceptions import (
-    AJAXError,
-    AlreadyRegistered,
-    NotRegistered
-)
+from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
+    PrimaryKeyMissing
 from ajax.encoders import encoder
 from ajax.signals import ajax_created, ajax_deleted, ajax_updated
 
@@ -202,9 +200,10 @@ class ModelEndpoint(object):
         Most likely you will want to lock down who can edit and delete various
         models. To do this, just override this method in your child class.
         """
-        authentication_class = path_to_import(settings.AJAX_AUTHENTICATION)
+        if request.user.is_authenticated():
+            return True
 
-        return authentication_class.is_authenticated()
+        return False
 
 
 class FormEndpoint(object):
