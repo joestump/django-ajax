@@ -32,11 +32,15 @@ class AJAXError(Exception):
         self.extra = kwargs  # Any kwargs will be appended to the output.
 
     def get_response(self):
+        try:
+            msg = smart_str(self.msg.decode())
+        except (AttributeError,):
+            msg = smart_str(self.msg)
         error = {
             'success': False,
             'data': {
                 'code': self.code,
-                'message': smart_str(self.msg.decode())
+                'message': msg
             }
         }
         error.update(self.extra)
