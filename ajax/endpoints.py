@@ -5,6 +5,9 @@ from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext_lazy as _
 from django.db.models.fields import FieldDoesNotExist
+
+from ajax.compat import path_to_import
+from ajax.conf import settings
 from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, \
     PrimaryKeyMissing
@@ -27,6 +30,8 @@ class ModelEndpoint(object):
     }
 
     immutable_fields = []  # List of model fields that are not writable.
+
+    authentication = path_to_import(settings.AJAX_AUTHENTICATION)
 
     def __init__(self, application, model, method, **kwargs):
         self.application = application
@@ -200,10 +205,7 @@ class ModelEndpoint(object):
         Most likely you will want to lock down who can edit and delete various
         models. To do this, just override this method in your child class.
         """
-        if request.user.is_authenticated():
-            return True
-
-        return False
+        return self.authentication.is_authenticated()
 
 
 class FormEndpoint(object):
