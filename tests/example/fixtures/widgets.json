@@ -3,6 +3,7 @@
         "pk": 1, 
         "model": "example.widget", 
         "fields": {
+            "category": null,
             "active": false, 
             "description": null, 
             "title": "Iorem lipsum color bit amit"
@@ -12,9 +13,20 @@
         "pk": 2, 
         "model": "example.widget", 
         "fields": {
+            "category": null,
             "active": true, 
             "description": null, 
             "title": "Lorem ipsum dolor sit amet"
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "example.widget", 
+        "fields": {
+            "category": 1,
+            "active": true, 
+            "description": null, 
+            "title": "Sorem ipsum dolor lit amet"
         }
     }
 ]

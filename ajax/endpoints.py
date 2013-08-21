@@ -154,8 +154,15 @@ class ModelEndpoint(object):
             if field in self.fields:
                 f = self.model._meta.get_field(field)
                 val = self._extract_value(val)
-                if val and isinstance(f, models.ForeignKey):
-                    data[smart_str(field)] = f.rel.to.objects.get(pk=val)
+                if isinstance(f, models.ForeignKey):
+                    pk = val
+                    if f.null:
+                        try:
+                            pk = int(val)
+                        except ValueError:
+                            pk = None
+                            val = None
+                    data[smart_str(field)] = f.rel.to.objects.get(pk=pk) if pk else val
                 else:
                     data[smart_str(field)] = val
 

@@ -5,7 +5,7 @@ from example.models import Widget
 
 
 class BaseTest(TestCase):
-    fixtures = ['users.json', 'widgets.json']
+    fixtures = ['users.json', 'categories.json', 'widgets.json']
 
     def setUp(self):
         self.login('jstump')
@@ -60,6 +60,13 @@ class EndpointTests(BaseTest):
             {'name': 'Joe Stump', 'age': 31})
         self.assertEquals('Joe Stump', content['data']['name'])
         self.assertEquals('31', content['data']['age'])
+
+    def test_empty_foreign_key(self):
+        """Test that nullable ForeignKey fields can be set to null"""
+        resp, content = self.post('/ajax/example/widget/3/update.json',
+            {'category': ''})
+        self.assertEquals(None, content['data']['category'])
+        self.assertEquals(None, Widget.objects.get(pk=3).category)
 
     def test_logged_out_user_fails(self):
         """Make sure @login_required rejects requests to echo."""
