@@ -68,6 +68,27 @@ class EndpointTests(BaseTest):
         self.assertEquals(None, content['data']['category'])
         self.assertEquals(None, Widget.objects.get(pk=3).category)
 
+    def test_zero_foreign_key(self):
+        """Test that nullable ForeignKey fields can be set to null by setting it to 0"""
+        resp, content = self.post('/ajax/example/widget/4/update.json',
+            {'category': 0})
+        self.assertEquals(None, content['data']['category'])
+        self.assertEquals(None, Widget.objects.get(pk=4).category)
+
+    def test_none_foreign_key(self):
+        """Test that nullable ForeignKey fields can be set to null by setting it to None"""
+        resp, content = self.post('/ajax/example/widget/5/update.json',
+            {'category': None})
+        self.assertEquals(None, content['data']['category'])
+        self.assertEquals(None, Widget.objects.get(pk=5).category)
+
+    def test_false_foreign_key(self):
+        """Test that nullable ForeignKey fields can be set to null by setting it to false"""
+        resp, content = self.post('/ajax/example/widget/6/update.json',
+            {'category': False})
+        self.assertEquals(None, content['data']['category'])
+        self.assertEquals(None, Widget.objects.get(pk=6).category)
+
     def test_logged_out_user_fails(self):
         """Make sure @login_required rejects requests to echo."""
         self.client.logout()
