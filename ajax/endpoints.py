@@ -155,7 +155,7 @@ class ModelEndpoint(object):
                 field_obj = self.model._meta.get_field(field)
                 val = self._extract_value(val)
                 if isinstance(field_obj, models.ForeignKey):
-                    if field_obj.null and (not val or val in ['None', '0']):
+                    if field_obj.null and not val:
                         clean_value = None
                     else:
                         clean_value = field_obj.rel.to.objects.get(pk=val)
