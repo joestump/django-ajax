@@ -152,12 +152,16 @@ class ModelEndpoint(object):
                 continue  # Ignore immutable fields silently.
 
             if field in self.fields:
-                f = self.model._meta.get_field(field)
+                field_obj = self.model._meta.get_field(field)
                 val = self._extract_value(val)
-                if val and isinstance(f, models.ForeignKey):
-                    data[smart_str(field)] = f.rel.to.objects.get(pk=val)
+                if isinstance(field_obj, models.ForeignKey):
+                    if field_obj.null and not val:
+                        clean_value = None
+                    else:
+                        clean_value = field_obj.rel.to.objects.get(pk=val)
                 else:
-                    data[smart_str(field)] = val
+                    clean_value = val
+                data[smart_str(field)] = clean_value
 
         return data
 
