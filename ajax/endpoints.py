@@ -31,7 +31,7 @@ class ModelEndpoint(object):
 
     immutable_fields = []  # List of model fields that are not writable.
 
-    authentication = path_to_import(settings.AJAX_AUTHENTICATION)
+    authentication = path_to_import(settings.AJAX_AUTHENTICATION)()
 
     def __init__(self, application, model, method, **kwargs):
         self.application = application
