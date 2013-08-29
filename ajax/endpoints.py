@@ -205,7 +205,7 @@ class ModelEndpoint(object):
         Most likely you will want to lock down who can edit and delete various
         models. To do this, just override this method in your child class.
         """
-        return self.authentication.is_authenticated()
+        return self.authentication.is_authenticated(request, application, method)
 
 
 class FormEndpoint(object):
