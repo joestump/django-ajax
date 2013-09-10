@@ -10,6 +10,12 @@ from ajax.encoders import encoder
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
 
+
+class EmptyPageResult(object):
+    def __init__(self):
+        self.object_list = []
+
+
 class ModelEndpoint(object):
     _value_map = {
         'false': False,
@@ -62,11 +68,11 @@ class ModelEndpoint(object):
         
         """
 
-        #it might be nice to be able to set this on the model itself, perhaps in _meta
-        max_items_per_page = getattr(settings,'AJAX_MAX_PER_PAGE',100)
-        requested_items_per_page = request.POST.get("items_per_page",20)
-        items_per_page = min(max_items_per_page,requested_items_per_page)        
-        current_page = request.POST.get("current_page",1)        
+        max_items_per_page = getattr(self, 'max_per_page',
+                                      getattr(settings, 'AJAX_MAX_PER_PAGE', 100))
+        requested_items_per_page = request.POST.get("items_per_page", 20)
+        items_per_page = min(max_items_per_page, requested_items_per_page)
+        current_page = request.POST.get("current_page", 1)
         objects = self.model.objects.all()
         
         paginator = Paginator(objects, items_per_page)
@@ -77,8 +83,8 @@ class ModelEndpoint(object):
             # If page is not an integer, deliver first page.
             page = paginator.page(1)
         except EmptyPage:
-            # If page is out of range (e.g. 9999), deliver last page of results.
-            page = paginator.page(paginator.num_pages)
+            # If page is out of range (e.g. 9999), return empty list.
+            page = EmptyPageResult()
         
         return [encoder.encode(record) for record in page.object_list]        
 
