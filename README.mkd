@@ -7,7 +7,10 @@ Additionally, this package allows you to create AJAX endpoints for manipulating 
 # Install
 
 1. Make sure you have the [decorator](http://pypi.python.org/pypi/decorator) package installed.
-2. Install the `ajax/` directory as you would any other application in your Django project or put it in your Django project's `sys.path` somewhere. 
+2. Install the `ajax/` directory as you would any other application in your Django project or put it in your Django project's `sys.path` somewhere. The easiest way to install is through pip:
+```
+pip install -e git://github.com/joestump/django-ajax#egg=django-ajax
+```
 3. Add `ajax` to `INSTALLED_APPS` in your `settings.py`.
 4. In your Django project's `urls.py` add `(r'^ajax/', include('ajax.urls'))`.
 
@@ -98,6 +101,8 @@ You can then send a POST to:
 * `/ajax/my_app/category/{pk}/update.json` to update a `Category`. `pk` must be present in the path for `update`, `delete`, and `get`. **NOTE:** This package assumes that the `pk` argument is an integer of some sort. If you've mangled your `pk` fields in weird ways, this likely will not work as expected.
 * `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
 * `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
+
+**NOTE:** Your Model name (e.g. `category` in the above example) *must* be lowercase. Your request will fail otherwise.
 
 ### Adding Ad-hoc endpoints to ModelEndpoints
 

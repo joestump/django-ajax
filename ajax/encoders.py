@@ -2,10 +2,19 @@ from django.core import serializers
 from ajax.exceptions import AlreadyRegistered, NotRegistered
 from django.db.models.fields import FieldDoesNotExist
 from django.db import models
+from django.conf import settings
 from django.utils.html import escape
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 import collections
+
+
+# Used to change the field name for the Model's pk.
+AJAX_PK_ATTR_NAME = getattr(settings, 'AJAX_PK_ATTR_NAME', 'pk')
+
+
+def _fields_from_model(model):
+    return [field.name for field in model.__class__._meta.fields]
 
 
 class DefaultEncoder(object):
@@ -15,9 +24,18 @@ class DefaultEncoder(object):
         'AutoField': int,
         'FloatField': float,
     }
-    def to_dict(self, record, expand=False, html_escape=False):
+
+    def to_dict(self, record, expand=False, html_escape=False, fields=None):
         self.html_escape = html_escape
-        data = serializers.serialize('python', [record])[0]
+        if hasattr(record, '__exclude__') and callable(record.__exclude__):
+            try:
+                exclude = record.__exclude__()
+                if fields is None:
+                    fields = _fields_from_model(record)
+                fields = set(fields) - set(exclude)
+            except TypeError:
+                pass
+        data = serializers.serialize('python', [record], fields=fields)[0]
 
         if hasattr(record, 'extra_fields'):
             ret = record.extra_fields
@@ -25,7 +43,7 @@ class DefaultEncoder(object):
             ret = {}
 
         ret.update(data['fields'])
-        ret['pk'] = data['pk']
+        ret[AJAX_PK_ATTR_NAME] = data['pk']
 
         for field, val in ret.iteritems():
             try:
@@ -88,15 +106,8 @@ class ExcludeEncoder(DefaultEncoder):
         self.exclude = exclude
 
     def __call__(self, record, html_escape=False):
-        data = self.to_dict(record, html_escape=html_escape)
-        final = {}
-        for key, val in data.iteritems():
-            if key in self.exclude:
-                continue
-
-            final[key] = val
-
-        return final
+        fields = set(_fields_from_model(record)) - set(self.exclude)
+        return self.to_dict(record, html_escape=html_escape, fields=fields)
 
 
 class IncludeEncoder(DefaultEncoder):
@@ -104,15 +115,7 @@ class IncludeEncoder(DefaultEncoder):
         self.include = include
 
     def __call__(self, record, html_escape=False):
-        data = self.to_dict(record, html_escape=html_escape)
-        final = {}
-        for key, val in data.iteritems():
-            if key not in self.include:
-                continue
-
-            final[key] = val
-
-        return final
+        return self.to_dict(record, html_escape=html_escape, fields=self.include)
 
 
 class Encoders(object):

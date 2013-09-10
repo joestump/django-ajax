@@ -1,0 +1,30 @@
+[
+    {
+        "pk": 1, 
+        "model": "example.category", 
+        "fields": {
+            "title": "Proin mollis, massa quis pulvinar viverra"
+        }
+    },
+    {
+        "pk": 2, 
+        "model": "example.category", 
+        "fields": {
+            "title": "Vestibulum suscipit pulvinar purus"
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "example.category", 
+        "fields": {
+            "title": "Morbi sed bibendum dui"
+        }
+    },
+    {
+        "pk": 4, 
+        "model": "example.category", 
+        "fields": {
+            "title": "Aenean euismod cursus posuere"
+        }
+    }
+]

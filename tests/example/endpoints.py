@@ -1,7 +1,6 @@
 from ajax import endpoint
 from ajax.decorators import login_required
 from ajax.endpoints import ModelEndpoint
-from ajax.exceptions import AJAXError
 from .models import Widget
 
 
@@ -14,3 +13,5 @@ def echo(request):
 class WidgetEndpoint(ModelEndpoint):
     model = Widget
     max_per_page = 100
+
+endpoint.register(Widget, WidgetEndpoint)

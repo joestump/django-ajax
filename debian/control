@@ -8,7 +8,7 @@ Homepage: https://launchpad.net/~chris-lea/+archive/python-django-ajax
 
 Package: python-django-ajax
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python (>= 2.5), python-django (>= 1.2.0), python-decorator
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>= 2.5), python-decorator
 Description: AJAX endpoint framework for Django
  This package creates a minimal framework for
  creating AJAX endpoints of your own in Django

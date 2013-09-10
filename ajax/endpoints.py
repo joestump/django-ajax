@@ -1,14 +1,19 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils import simplejson as json
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext_lazy as _
-from django.db.models.fields import FieldDoesNotExist
 from ajax.decorators import require_pk
-from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered, PrimaryKeyMissing
+from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered
 from ajax.encoders import encoder
+from ajax.signals import ajax_created, ajax_deleted, ajax_updated
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
+
+try:
+    from taggit.utils import parse_tags
+except ImportError:
+    def parse_tags(tagstring):
+        raise AJAXError(500, 'Taggit required: http://bit.ly/RE0dr9')
 
 
 class EmptyPageResult(object):
@@ -37,7 +42,13 @@ class ModelEndpoint(object):
         record = self.model(**self._extract_data(request))
         if self.can_create(request.user, record):
             record = self._save(record)
-            self._set_tags(request, record)
+            try:
+                tags = self._extract_tags(request)
+                record.tags.set(*tags)
+            except KeyError:
+                pass
+
+            ajax_created.send(sender=record.__class__, instance=record)
             return encoder.encode(record)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
@@ -51,8 +62,11 @@ class ModelEndpoint(object):
         if cmd == 'similar':
             result = record.tags.similar_objects()
         else:
-            tags = self._extract_tags(request)
-            getattr(record.tags, cmd)(*tags)
+            try:
+                tags = self._extract_tags(request)
+                getattr(record.tags, cmd)(*tags)
+            except KeyError:
+                pass  # No tags to set/manipulate in this request.
             result = record.tags.all()
 
         return encoder.encode(result)
@@ -105,12 +119,26 @@ class ModelEndpoint(object):
     @require_pk
     def update(self, request):
         record = self._get_record()
-        if self.can_update(request.user, record):
-            for key, val in self._extract_data(request).iteritems():
-                setattr(record, key, val)
-            if 'tags' in request.POST:
-                self._set_tags(request, record)
-            return encoder.encode(self._save(record))
+        modified = self._get_record()
+        for key, val in self._extract_data(request).iteritems():
+            setattr(modified, key, val)
+        if self.can_update(request.user, record, modified=modified):
+
+            self._save(modified)
+
+            try:
+                tags = self._extract_tags(request)
+                if tags:
+                    modified.tags.set(*tags)
+                else:
+                    # If tags were in the request and set to nothing, we will
+                    # clear them all out.
+                    modified.tags.clear()
+            except KeyError:
+                pass
+
+            ajax_updated.send(sender=record.__class__, instance=record)
+            return encoder.encode(modified)
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
@@ -119,6 +147,7 @@ class ModelEndpoint(object):
         record = self._get_record()
         if self.can_delete(request.user, record):
             record.delete()
+            ajax_deleted.send(sender=record.__class__, instance=record)
             return {'pk': int(self.pk)}
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
@@ -132,14 +161,16 @@ class ModelEndpoint(object):
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
     def _extract_tags(self, request):
-        try:
-            tags = []
-            for t in smart_str(request.POST['tags']).split(','):
-                t = t.strip()
-                if len(t) > 0:
-                    tags.append(t)
-        except Exception, e:
-            tags = []
+        # We let this throw a KeyError so that calling functions will know if
+        # there were NO tags in the request or if there were, but that the
+        # call had an empty tags list in it.
+        raw_tags = request.POST['tags']
+        tags = []
+        if raw_tags:
+            try:
+                tags = [t for t in parse_tags(raw_tags) if len(t)]
+            except Exception, e:
+                pass
 
         return tags
 
@@ -156,15 +187,19 @@ class ModelEndpoint(object):
         data = {}
         for field, val in request.POST.iteritems():
             if field in self.immutable_fields:
-                raise AJAXError(400, '%s is immutable.' % field)
+                continue  # Ignore immutable fields silently.
 
             if field in self.fields:
-                f = self.model._meta.get_field(field)
+                field_obj = self.model._meta.get_field(field)
                 val = self._extract_value(val)
-                if val and isinstance(f, models.ForeignKey):
-                    data[smart_str(field)] = f.rel.to.objects.get(pk=val)
+                if isinstance(field_obj, models.ForeignKey):
+                    if field_obj.null and not val:
+                        clean_value = None
+                    else:
+                        clean_value = field_obj.rel.to.objects.get(pk=val)
                 else:
-                    data[smart_str(field)] = val
+                    clean_value = val
+                data[smart_str(field)] = clean_value
 
         return data
 
@@ -190,7 +225,7 @@ class ModelEndpoint(object):
     def can_get(self, user, record):
         return True
 
-    def _user_is_active_or_staff(self, user, record):
+    def _user_is_active_or_staff(self, user, record, **kwargs):
         return ((user.is_authenticated() and user.is_active) or user.is_staff)
 
     can_create = _user_is_active_or_staff

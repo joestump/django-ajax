@@ -4,14 +4,18 @@ from django.http import HttpResponse, HttpResponseNotFound, \
     HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseServerError, \
     HttpResponseBadRequest
 
+
 class AlreadyRegistered(Exception):
     pass
+
 
 class NotRegistered(Exception):
     pass
 
+
 class PrimaryKeyMissing(Exception):
     pass
+
 
 class AJAXError(Exception):
     RESPONSES = {
@@ -28,12 +32,19 @@ class AJAXError(Exception):
         self.extra = kwargs  # Any kwargs will be appended to the output.
 
     def get_response(self):
+        try:
+            msg = smart_str(self.msg.decode())
+        except (AttributeError,):
+            msg = smart_str(self.msg)
         error = {
-            'code': self.code,
-            'message': smart_str(self.msg)
+            'success': False,
+            'data': {
+                'code': self.code,
+                'message': msg
+            }
         }
         error.update(self.extra)
 
         response = self.RESPONSES[self.code]()
-        response.content = json.dumps(error, indent=4)
+        response.content = json.dumps(error, separators=(',', ':'))
         return response
