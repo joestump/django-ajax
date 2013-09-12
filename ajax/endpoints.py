@@ -87,7 +87,11 @@ class ModelEndpoint(object):
         requested_items_per_page = request.POST.get("items_per_page", 20)
         items_per_page = min(max_items_per_page, requested_items_per_page)
         current_page = request.POST.get("current_page", 1)
-        objects = self.model.objects.all()
+
+        if hasattr(self, 'get_queryset'):
+            objects = self.get_queryset(request.user)
+        else:
+            objects = self.model.objects.all()
         
         paginator = Paginator(objects, items_per_page)
 
