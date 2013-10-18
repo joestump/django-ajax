@@ -215,6 +215,24 @@ Returns `True` if the `user` can fetch the given `record`.
 
 This method is ran before any other security-related operations. This method allows you to control overall authentication-related access prior to any of the `can_*` methods being ran and before any model operations are executed. It is ran regardless of the operation being attempted.
 
+## Encoders
+
+AJAX ships with a few helpful encoders. You can specify the model fields you would like to include or exclude using the `IncludeEncoder` and `ExcludeEncoder`, respectively.
+
+To only include certain fields:
+
+    from ajax.encoders import encoder, IncludeEncoder
+    from my_app.models import Category
+    
+    encoder.register(Category, IncludeEncoder(include=['foo', 'bar']))
+
+To exclude a field:
+
+    from ajax.encoders import encoder, IncludeEncoder
+    from my_app.models import Category
+    
+    encoder.register(Category, ExcludeEncoder(exclude=['foo']))
+
 # Todo
 
 1. Integrate [Django's CSRF token support](http://docs.djangoproject.com/en/dev/ref/contrib/csrf/). 
