@@ -120,7 +120,7 @@ class ModelEndpointTests(BaseTest):
     def test_list_has_permission__default_empty(self):
         Category.objects.create(title='test')
 
-        ce = CategoryEndpoint('example', Category, 'list')
-        ce.can_list = lambda *args, **kwargs: True
+        self.category_endpoint.can_list = lambda *args, **kwargs: True
 
-        self.assertEqual(0, len(ce.list(MockRequest())))
+        results = self.category_endpoint.list(MockRequest())
+        self.assertEqual(0, len(results))
