@@ -1,8 +1,9 @@
 from django.test import TestCase
 from django.contrib.auth.models import User
 import json
-from .models import Widget
-from .endpoints import WidgetEndpoint
+from ajax.exceptions import AJAXError
+from .models import Widget, Category
+from .endpoints import WidgetEndpoint, CategoryEndpoint
 
 
 class BaseTest(TestCase):
@@ -87,11 +88,13 @@ class EndpointTests(BaseTest):
 class MockRequest(object):
     def __init__(self, **kwargs):
         self.POST = kwargs
+        self.user = None
 
 
 class ModelEndpointTests(BaseTest):
     def setUp(self):
         self.list_endpoint = WidgetEndpoint('example', Widget, 'list')
+        self.category_endpoint = CategoryEndpoint('example', Category, 'list')
 
     def test_list_returns_all_items(self):
         results = self.list_endpoint.list(MockRequest())
@@ -101,6 +104,9 @@ class ModelEndpointTests(BaseTest):
         self.list_endpoint.max_per_page = 1
         results = self.list_endpoint.list(MockRequest())
         self.assertEqual(len(results), 1)
+
+    def test_list__ajaxerror_if_can_list_isnt_set(self):
+        self.assertRaises(AJAXError, self.category_endpoint.list, MockRequest())
 
     def test_out_of_range_returns_empty_list(self):
         results = self.list_endpoint.list(MockRequest(current_page=99))

@@ -88,6 +88,9 @@ class ModelEndpoint(object):
         items_per_page = min(max_items_per_page, requested_items_per_page)
         current_page = request.POST.get("current_page", 1)
 
+        if not self.can_list(request.user):
+            raise AJAXError(403, _("Access to this endpoint is forbidden"))
+
         if hasattr(self, 'get_queryset'):
             objects = self.get_queryset(request.user)
         else:
@@ -235,6 +238,7 @@ class ModelEndpoint(object):
     can_create = _user_is_active_or_staff
     can_update = _user_is_active_or_staff
     can_delete = _user_is_active_or_staff
+    can_list = lambda *args, **kwargs: False
 
     def authenticate(self, request, application, method):
         """Authenticate the AJAX request.
