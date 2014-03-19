@@ -71,7 +71,10 @@ class ModelEndpoint(object):
 
         return encoder.encode(result)
 
-    def list(self,request):
+    def get_queryset(self, request):
+        return self.model.objects.none()
+
+    def list(self, request):
         """
         List objects of a model. By default will show page 1 with 20 objects on it. 
         
@@ -91,11 +94,8 @@ class ModelEndpoint(object):
         if not self.can_list(request.user):
             raise AJAXError(403, _("Access to this endpoint is forbidden"))
 
-        if hasattr(self, 'get_queryset'):
-            objects = self.get_queryset(request.user)
-        else:
-            objects = self.model.objects.all()
-        
+        objects = self.get_queryset(request)
+
         paginator = Paginator(objects, items_per_page)
 
         try:
