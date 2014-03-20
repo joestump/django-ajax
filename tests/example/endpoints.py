@@ -15,8 +15,12 @@ class WidgetEndpoint(ModelEndpoint):
     max_per_page = 100
     can_list = lambda *args, **kwargs: True
 
+    def get_queryset(self, request):
+        return Widget.objects.all()
+
 class CategoryEndpoint(ModelEndpoint):
     model = Category
+
 
 endpoint.register(Widget, WidgetEndpoint)
 endpoint.register(Category, CategoryEndpoint)

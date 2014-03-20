@@ -116,3 +116,11 @@ class ModelEndpointTests(BaseTest):
         self.list_endpoint.max_per_page = 1
         results = self.list_endpoint.list(MockRequest(items_per_page=2))
         self.assertEqual(len(results), 1)
+
+    def test_list_has_permission__default_empty(self):
+        Category.objects.create(title='test')
+
+        self.category_endpoint.can_list = lambda *args, **kwargs: True
+
+        results = self.category_endpoint.list(MockRequest())
+        self.assertEqual(0, len(results))
