@@ -71,7 +71,7 @@ class ModelEndpoint(object):
 
         return encoder.encode(result)
 
-    def get_queryset(self, request):
+    def get_queryset(self, request, **kwargs):
         return self.model.objects.none()
 
     def list(self, request):
