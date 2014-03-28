@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='ajax',
-    version='1.0.1',
+    version='1.1.0',
     description='A simple framework for creating AJAX endpoints in Django.',
     long_description='',
     keywords='django, ajax',
