@@ -17,6 +17,19 @@ import ajax
 logger = getLogger('django.request')
 
 
+class EnvelopedResponse(object):
+    """
+    Object used to contain metadata about the request that will be added to
+    the wrapping json structure (aka the envelope).
+
+    :param: data - The object representation that you want to return
+    :param: metadata - dict of information which will be merged with the
+                       envelope.
+    """
+    def __init__(self, data, metadata):
+        self.data = data
+        self.metadata = metadata
+
 @json_response
 def endpoint_loader(request, application, model, **kwargs):
     """Load an AJAX endpoint.
@@ -64,10 +77,18 @@ def endpoint_loader(request, application, model, **kwargs):
     data = endpoint(request)
     if isinstance(data, HttpResponse):
         return data
+
+    if isinstance(data, EnvelopedResponse):
+        envelope = data.metadata
+        payload = data.data
     else:
-        payload = {
-            'success': True,
-            'data': data,
-        }
-        return HttpResponse(json.dumps(payload, cls=DjangoJSONEncoder,
-            separators=(',', ':')))
+        envelope = {}
+        payload = data
+
+    envelope.update({
+        'success': True,
+        'data': payload,
+    })
+
+    return HttpResponse(json.dumps(envelope, cls=DjangoJSONEncoder,
+        separators=(',', ':')))
