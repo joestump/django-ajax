@@ -8,6 +8,7 @@ from ajax.encoders import encoder
 from ajax.signals import ajax_created, ajax_deleted, ajax_updated
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
+from ajax.views import EnvelopedResponse
 
 try:
     from taggit.utils import parse_tags
@@ -106,8 +107,10 @@ class ModelEndpoint(object):
         except EmptyPage:
             # If page is out of range (e.g. 9999), return empty list.
             page = EmptyPageResult()
-        
-        return [encoder.encode(record) for record in page.object_list]        
+
+        data = [encoder.encode(record) for record in page.object_list]
+        return EnvelopedResponse(data=data, metadata={'total': paginator.count})
+
 
     def _set_tags(self, request, record):
         tags = self._extract_tags(request)
