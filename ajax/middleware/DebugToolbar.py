@@ -1,5 +1,9 @@
+try:
+    import json
+except ImportError:
+    from django.utils import simplejson as json
+
 from debug_toolbar.middleware import DebugToolbarMiddleware, add_content_handler
-from django.utils import simplejson as json
 from django.core.serializers.json import DjangoJSONEncoder
 
 

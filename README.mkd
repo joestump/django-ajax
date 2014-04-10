@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/joestump/django-ajax.png?branch=master)](https://travis-ci.org/joestump/django-ajax)
+
 # Overview
 
 This package creates a minimal framework for creating AJAX endpoints of your own in Django without having to create all of the mappings, handling errors, building JSON, etc.
@@ -15,6 +17,12 @@ pip install -e git://github.com/joestump/django-ajax#egg=django-ajax
 4. In your Django project's `urls.py` add `(r'^ajax/', include('ajax.urls'))`.
 
 There are no models associated with this package so you don't need to worry about syncing your database or anything.
+
+## Settings
+
+You can add the following settings to `settings.py` :
+
+* `AJAX_MAX_PER_PAGE` (optional: defaults to 100). Sets the maximum number of objects that can be returned per page using the built-in `list` method on a `ModelEndpoint`
 
 # Usage
 
@@ -91,6 +99,7 @@ AJAX also offers a class, called `ModelEndpoint`, that takes a Django model and 
 You can then send a POST to:
 
 * `/ajax/my_app/category.json` to create a new `Category`.
+* `/ajax/my_app/category/list.json` to get a list of Category. Additionally, you can POST `items_per_page` (default is 20) and `current_page` (default is 1).
 * `/ajax/my_app/category/{pk}/update.json` to update a `Category`. `pk` must be present in the path for `update`, `delete`, and `get`. **NOTE:** This package assumes that the `pk` argument is an integer of some sort. If you've mangled your `pk` fields in weird ways, this likely will not work as expected.
 * `/ajax/my_app/category/{pk}/get.json` to get the `Category` as specified as `pk`.
 * `/ajax/my_app/category/{pk}/delete.json` to delete the `Category` as specified by `pk`.
@@ -161,6 +170,8 @@ There are a number of security features inherent in the framework along with way
 
 ## Decorators
 
+#### ajax.decorators.login_required
+
 The AJAX package offers a familiar decorator in `ajax.decorators` called `login_required`. It works in the same way that the Django decorator does and handles throwing a proper `AJAXError` if the user isn't logged in.
 
     from ajax.decorators import login_required
@@ -170,6 +181,17 @@ The AJAX package offers a familiar decorator in `ajax.decorators` called `login_
         return {
             'Hello, %s!' % request.user.username
         }
+
+#### ajax.decorators.allowed_methods
+You can limit methods that are allowed on your `ModelEndpoint` by decorating your overriding ModelEndpoint.authenticate() method with the `allowed_methods` decorator. If a user tries to access a disallowed method, then they will receive an `AJAXError`. 
+
+	from ajax.decorators import allowed_methods
+
+    class CategoryEndpoint(ajax.endpoints.ModelEndpoint):
+
+    	@allowed_methods('get','update','list')
+    	def authenticate(self,request):
+    		...
 
 ## ModelEndpoint
 
@@ -194,6 +216,24 @@ Returns `True` if the `user` can fetch the given `record`.
 ### (bool) ModelEndpoint.authenticate(request, application, method)
 
 This method is ran before any other security-related operations. This method allows you to control overall authentication-related access prior to any of the `can_*` methods being ran and before any model operations are executed. It is ran regardless of the operation being attempted.
+
+## Encoders
+
+AJAX ships with a few helpful encoders. You can specify the model fields you would like to include or exclude using the `IncludeEncoder` and `ExcludeEncoder`, respectively.
+
+To only include certain fields:
+
+    from ajax.encoders import encoder, IncludeEncoder
+    from my_app.models import Category
+    
+    encoder.register(Category, IncludeEncoder(include=['foo', 'bar']))
+
+To exclude a field:
+
+    from ajax.encoders import encoder, IncludeEncoder
+    from my_app.models import Category
+    
+    encoder.register(Category, ExcludeEncoder(exclude=['foo']))
 
 # Todo
 
