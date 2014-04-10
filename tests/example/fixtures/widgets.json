@@ -3,6 +3,7 @@
         "pk": 1, 
         "model": "example.widget", 
         "fields": {
+            "category": null,
             "active": false, 
             "description": null, 
             "title": "Iorem lipsum color bit amit"
@@ -12,9 +13,50 @@
         "pk": 2, 
         "model": "example.widget", 
         "fields": {
+            "category": null,
             "active": true, 
             "description": null, 
             "title": "Lorem ipsum dolor sit amet"
+        }
+    },
+    {
+        "pk": 3, 
+        "model": "example.widget", 
+        "fields": {
+            "category": 1,
+            "active": true, 
+            "description": null, 
+            "title": "Sorem ipsum dolor lit amet"
+        }
+    },
+    {
+        "pk": 4, 
+        "model": "example.widget", 
+        "fields": {
+            "category": 2,
+            "active": true, 
+            "description": null, 
+            "title": "Dorem ipsum solor bit amet"
+        }
+    },
+    {
+        "pk": 5, 
+        "model": "example.widget", 
+        "fields": {
+            "category": 3,
+            "active": true, 
+            "description": null, 
+            "title": "Fusce in mattis elit"
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "example.widget", 
+        "fields": {
+            "category": 4,
+            "active": true, 
+            "description": null, 
+            "title": "Nulla quis turpis augue"
         }
     }
 ]

@@ -4,6 +4,8 @@ from django.http import Http404
 from django.conf import settings
 from decorator import decorator
 from ajax.exceptions import AJAXError, PrimaryKeyMissing
+from functools import wraps
+from django.utils.decorators import available_attrs
 
 
 logger = getLogger('django.request')
@@ -25,6 +27,17 @@ def require_pk(func, *args, **kwargs):
     return func(*args, **kwargs)
 
 
+def allowed_methods(*args,**kwargs):
+    request_method_list = args
+    def decorator(func):
+        @wraps(func, assigned=available_attrs(func))
+        def inner(request, *args, **kwargs):
+            if request.method not in request_method_list:
+                raise AJAXError(403, _('Access denied.'))
+            return func(request, *args, **kwargs)
+        return inner
+    return decorator        
+    
 @decorator
 def json_response(f, *args, **kwargs):
     """Wrap a view in JSON.

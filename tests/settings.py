@@ -165,3 +165,6 @@ JENKINS_TASKS = ('django_jenkins.tasks.run_pylint',
 
 # The test runner for the Jenkins command.
 JENKINS_TEST_RUNNER = 'django_jenkins.runner.CITestSuiteRunner'
+
+# django-ajax specific settings
+MAX_PER_PAGE = 20
