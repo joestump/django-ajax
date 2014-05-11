@@ -4,3 +4,6 @@ help:
 
 test:
 	python tests/manage.py test example
+
+release:	
+	python setup.py sdist upload

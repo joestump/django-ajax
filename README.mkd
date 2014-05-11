@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/joestump/django-ajax.png?branch=master)](https://travis-ci.org/joestump/django-ajax)
+
 # Overview
 
 This package creates a minimal framework for creating AJAX endpoints of your own in Django without having to create all of the mappings, handling errors, building JSON, etc.

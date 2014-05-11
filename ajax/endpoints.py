@@ -8,6 +8,7 @@ from ajax.encoders import encoder
 from ajax.signals import ajax_created, ajax_deleted, ajax_updated
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.conf import settings
+from ajax.views import EnvelopedResponse
 
 try:
     from taggit.utils import parse_tags
@@ -71,7 +72,10 @@ class ModelEndpoint(object):
 
         return encoder.encode(result)
 
-    def list(self,request):
+    def get_queryset(self, request, **kwargs):
+        return self.model.objects.none()
+
+    def list(self, request):
         """
         List objects of a model. By default will show page 1 with 20 objects on it. 
         
@@ -88,11 +92,11 @@ class ModelEndpoint(object):
         items_per_page = min(max_items_per_page, requested_items_per_page)
         current_page = request.POST.get("current_page", 1)
 
-        if hasattr(self, 'get_queryset'):
-            objects = self.get_queryset(request.user)
-        else:
-            objects = self.model.objects.all()
-        
+        if not self.can_list(request.user):
+            raise AJAXError(403, _("Access to this endpoint is forbidden"))
+
+        objects = self.get_queryset(request)
+
         paginator = Paginator(objects, items_per_page)
 
         try:
@@ -103,8 +107,10 @@ class ModelEndpoint(object):
         except EmptyPage:
             # If page is out of range (e.g. 9999), return empty list.
             page = EmptyPageResult()
-        
-        return [encoder.encode(record) for record in page.object_list]        
+
+        data = [encoder.encode(record) for record in page.object_list]
+        return EnvelopedResponse(data=data, metadata={'total': paginator.count})
+
 
     def _set_tags(self, request, record):
         tags = self._extract_tags(request)
@@ -235,6 +241,7 @@ class ModelEndpoint(object):
     can_create = _user_is_active_or_staff
     can_update = _user_is_active_or_staff
     can_delete = _user_is_active_or_staff
+    can_list = lambda *args, **kwargs: False
 
     def authenticate(self, request, application, method):
         """Authenticate the AJAX request.
