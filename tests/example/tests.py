@@ -137,7 +137,7 @@ class ModelEndpointPostTests(TestCase):
     """
     def setUp(self):
         for title in ['first', 'second', 'third']:
-            Widget.objects.create(title=title)
+            Widget.objects.create(title=title, active=True)
         u = User(email='test@example.org', username='test')
         u.set_password('password')
         u.save()
