@@ -1,13 +1,15 @@
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models
 from django.utils.encoding import smart_str
 from django.utils.translation import ugettext_lazy as _
+
+from ajax.compat import path_to_import
+from ajax.conf import settings
 from ajax.decorators import require_pk
 from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered
 from ajax.encoders import encoder
 from ajax.signals import ajax_created, ajax_deleted, ajax_updated
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.conf import settings
 from ajax.views import EnvelopedResponse
 
 try:
@@ -30,6 +32,8 @@ class ModelEndpoint(object):
     }
 
     immutable_fields = []  # List of model fields that are not writable.
+
+    authentication = path_to_import(settings.AJAX_AUTHENTICATION)()
 
     def __init__(self, application, model, method, **kwargs):
         self.application = application
@@ -77,13 +81,13 @@ class ModelEndpoint(object):
 
     def list(self, request):
         """
-        List objects of a model. By default will show page 1 with 20 objects on it. 
-        
+        List objects of a model. By default will show page 1 with 20 objects on it.
+
         **Usage**::
-        
+
             params = {"items_per_page":10,"page":2} //all params are optional
             $.post("/ajax/{app}/{model}/list.json"),params)
-        
+
         """
 
         max_items_per_page = getattr(self, 'max_per_page',
@@ -115,7 +119,7 @@ class ModelEndpoint(object):
     def _set_tags(self, request, record):
         tags = self._extract_tags(request)
         if tags:
-            record.tags.set(*tags) 
+            record.tags.set(*tags)
 
     def _save(self, record):
         try:
@@ -253,10 +257,7 @@ class ModelEndpoint(object):
         Most likely you will want to lock down who can edit and delete various
         models. To do this, just override this method in your child class.
         """
-        if request.user.is_authenticated():
-            return True
-
-        return False
+        return self.authentication.is_authenticated(request, application, method)
 
 
 class FormEndpoint(object):

@@ -8,8 +8,7 @@ env:
 python:
 - '2.6'
 - '2.7'
-install: 
+install:
 - pip install -r ci.txt Django==$DJANGO_VERSION
 - python setup.py install
 script: make test
-
