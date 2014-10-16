@@ -3,7 +3,7 @@ help:
 	@echo "  tests        to make a unit test run"
 
 test:
-	python tests/manage.py test example
+	PYTHONPATH=${PWD}:${PYTHONPATH} python tests/manage.py test example
 
-release:	
+release:
 	python setup.py sdist upload
