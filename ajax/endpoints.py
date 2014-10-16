@@ -220,7 +220,7 @@ class ModelEndpoint(object):
                     else:
                         clean_value = field_obj.rel.to.objects.get(pk=val)
                 else:
-                    clean_value = self.model._meta.get_field(field).to_python(val)
+                    clean_value = field_obj.to_python(val)
                 data[smart_str(field)] = clean_value
 
         return data
