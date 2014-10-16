@@ -1,2 +1,3 @@
 -r ./ci.txt
 django==1.5
+mock

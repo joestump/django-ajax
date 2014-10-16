@@ -134,11 +134,19 @@ class ModelEndpoint(object):
     def update(self, request):
         record = self._get_record()
         modified = self._get_record()
-        for key, val in self._extract_data(request).iteritems():
-            setattr(modified, key, val)
+
         if self.can_update(request.user, record, modified=modified):
 
-            self._save(modified)
+            update_record = False
+            for key, val in self._extract_data(request).iteritems():
+
+                # Only setattr and save the model when a change has happened.
+                if val != getattr(record, key):
+                    setattr(modified, key, val)
+                    update_record = True
+ 
+            if update_record:
+                self._save(modified)
 
             try:
                 tags = self._extract_tags(request)
@@ -212,7 +220,7 @@ class ModelEndpoint(object):
                     else:
                         clean_value = field_obj.rel.to.objects.get(pk=val)
                 else:
-                    clean_value = val
+                    clean_value = self.model._meta.get_field(field).to_python(val)
                 data[smart_str(field)] = clean_value
 
         return data
