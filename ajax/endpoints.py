@@ -135,15 +135,15 @@ class ModelEndpoint(object):
         record = self._get_record()
         modified = self._get_record()
 
+        update_record = False
+        for key, val in self._extract_data(request).iteritems():
+
+            # Only setattr and save the model when a change has happened.
+            if val != getattr(record, key):
+                setattr(modified, key, val)
+                update_record = True
+ 
         if self.can_update(request.user, record, modified=modified):
-
-            update_record = False
-            for key, val in self._extract_data(request).iteritems():
-
-                # Only setattr and save the model when a change has happened.
-                if val != getattr(record, key):
-                    setattr(modified, key, val)
-                    update_record = True
  
             if update_record:
                 self._save(modified)
