@@ -1,7 +1,13 @@
+import json
+
+import mock
+
 from django.test import TestCase
 from django.contrib.auth.models import User
-import json
+
+from ajax.endpoints import ModelEndpoint
 from ajax.exceptions import AJAXError
+
 from .models import Widget, Category
 from .endpoints import WidgetEndpoint, CategoryEndpoint
 
@@ -54,7 +60,7 @@ class EncodeTests(BaseTest):
             widget = Widget.objects.get(pk=encoded['pk'])
             for k in ('title','active','description'):
                 self.assertEquals(encoded[k],getattr(widget,k))
-        
+
 
 class EndpointTests(BaseTest):
     def test_echo(self):
@@ -83,6 +89,20 @@ class EndpointTests(BaseTest):
         self.client.logout()
         resp, content = self.post('/ajax/example/echo.json', {},
             status_code=403)
+
+    def test_has_changes_does_save(self):
+        """Test that updating to a new value calls save."""
+        with mock.patch.object(ModelEndpoint, '_save') as mock_save:
+            resp, content = self.post('/ajax/example/widget/6/update.json',
+                {'active': False})
+            self.assertTrue(mock_save.called)
+
+    def test_no_changes_doesnt_save(self):
+        """Test that updating to an existing value doesnt call save."""
+        with mock.patch.object(ModelEndpoint, '_save') as mock_save:
+            resp, content = self.post('/ajax/example/widget/6/update.json',
+                {'active': True})
+            self.assertFalse(mock_save.called)
 
 
 class MockRequest(object):
