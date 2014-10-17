@@ -1,9 +1,9 @@
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  tests        to make a unit test run"
+	@echo "  test        to make unit tests run"
 
 test:
-	python tests/manage.py test example
+	PYTHONPATH=${PWD}:${PYTHONPATH} python tests/manage.py test example
 
-release:	
+release:
 	python setup.py sdist upload
