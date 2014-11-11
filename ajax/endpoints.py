@@ -168,9 +168,10 @@ class ModelEndpoint(object):
     def delete(self, request):
         record = self._get_record()
         if self.can_delete(request.user, record):
+            payload = {'pk': int(self.pk)}
             record.delete()
-            ajax_deleted.send(sender=record.__class__, instance=record)
-            return {'pk': int(self.pk)}
+            ajax_deleted.send(sender=record.__class__, instance=record, payload=payload)
+            return payload
         else:
             raise AJAXError(403, _("Access to endpoint is forbidden"))
 
