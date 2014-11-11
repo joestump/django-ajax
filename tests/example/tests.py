@@ -174,7 +174,9 @@ class ModelEndpointPostTests(TestCase):
 
     def test_delete(self):
         widget = Widget.objects.all()[0]
-        mocked_ajax_delete_signal = mock.Mock()
+
+        # spec attr required for mocking signal in Django 1.4.
+        mocked_ajax_delete_signal = mock.Mock(spec=lambda: None)
         ajax_deleted.connect(mocked_ajax_delete_signal)
 
         self.client.login(username='test', password='password')
