@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 
 from ajax.endpoints import ModelEndpoint
 from ajax.exceptions import AJAXError
+from ajax.signals import ajax_deleted
 
 from .models import Widget, Category
 from .endpoints import WidgetEndpoint, CategoryEndpoint
@@ -151,6 +152,7 @@ class ModelEndpointTests(BaseTest):
         results = self.list_endpoint.list(MockRequest())
         self.assertEqual(6, results.metadata['total'])
 
+
 class ModelEndpointPostTests(TestCase):
     """
     Integration test for full urls->views->endpoint->encoder (and back) cycle.
@@ -169,3 +171,17 @@ class ModelEndpointPostTests(TestCase):
         content = json.loads(resp.content)
         self.assertTrue('total' in content.keys())
         self.assertEquals(content['total'], 3)
+
+    def test_delete(self):
+        widget = Widget.objects.all()[0]
+
+        # spec attr required for mocking signal in Django 1.4.
+        mocked_ajax_delete_signal = mock.Mock(spec=lambda: None)
+        ajax_deleted.connect(mocked_ajax_delete_signal)
+
+        self.client.login(username='test', password='password')
+
+        self.client.post('/ajax/example/widget/%s/delete.json' % widget.pk)
+
+        self.assertTrue(mocked_ajax_delete_signal.called)
+        self.assertEqual(widget.pk, mocked_ajax_delete_signal.call_args[1]['payload']['pk'])
