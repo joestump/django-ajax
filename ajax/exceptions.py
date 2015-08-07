@@ -1,7 +1,5 @@
-try:
-    import json
-except ImportError:
-    from django.utils import simplejson as json
+from __future__ import absolute_import
+import json
 
 from django.utils.encoding import smart_str
 from django.http import HttpResponse, HttpResponseNotFound, \
