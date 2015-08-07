@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from ajax import endpoint
 from ajax.decorators import login_required
 from ajax.endpoints import ModelEndpoint

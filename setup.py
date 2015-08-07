@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from setuptools import setup, find_packages
 
 
@@ -15,7 +16,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'decorator',
-        'django-appconf==0.6',
+        'django-appconf==1.0.*',
     ],
     extras_require={
         'Tagging': ['taggit']

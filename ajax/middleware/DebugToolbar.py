@@ -1,8 +1,7 @@
-try:
-    import json
-except ImportError:
-    from django.utils import simplejson as json
+from __future__ import absolute_import
+import json
 
+from django.utils import six
 from debug_toolbar.middleware import DebugToolbarMiddleware, add_content_handler
 from django.core.serializers.json import DjangoJSONEncoder
 
@@ -21,7 +20,10 @@ class AJAXDebugToolbarMiddleware(DebugToolbarMiddleware):
     the django-debug-toolbar panels.
     """
     def _append_json(self, response, toolbar):
-        payload = json.loads(response.content)
+        if isinstance(response.content, six.text_type):
+            payload = json.loads(response.content)
+        else:
+            payload = json.loads(response.content.decode('utf-8'))
         payload['debug_toolbar'] = {
             'sql': toolbar.stats['sql'],
             'timer': toolbar.stats['timer']
