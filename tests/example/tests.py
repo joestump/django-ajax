@@ -1,9 +1,12 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import json
 
 import mock
 
 from django.test import TestCase
 from django.contrib.auth.models import User
+from django.utils import six
 
 from ajax.endpoints import ModelEndpoint
 from ajax.exceptions import AJAXError
@@ -39,12 +42,14 @@ class BaseTest(TestCase):
         """
         response = self.client.post(uri, data)
         if debug:
-            print response.__class__.__name__
-            print response
+            print(response.__class__.__name__)
+            print(response)
 
         self.assertEquals(status_code, response.status_code)
-
-        return response, json.loads(response.content)
+        if isinstance(response.content, six.text_type):
+            return response, json.loads(response.content)
+        else:
+            return response, json.loads(response.content.decode('utf-8'))
 
 
 class EncodeTests(BaseTest):
@@ -168,8 +173,11 @@ class ModelEndpointPostTests(TestCase):
         self.client.login(username='test', password='password')
 
         resp = self.client.post('/ajax/example/widget/list.json')
-        content = json.loads(resp.content)
-        self.assertTrue('total' in content.keys())
+        if isinstance(resp.content, six.text_type):
+            content = json.loads(resp.content)
+        else:
+            content = json.loads(resp.content.decode('utf-8'))
+        self.assertTrue('total' in list(content.keys()))
         self.assertEquals(content['total'], 3)
 
     def test_delete(self):

@@ -1,16 +1,14 @@
-try:
-    import json
-except ImportError:
-    from django.utils import simplejson as json
+from __future__ import absolute_import
 
+import json
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from django.utils.importlib import import_module
 from django.utils.log import getLogger
 from django.core.serializers.json import DjangoJSONEncoder
 from ajax.exceptions import AJAXError, NotRegistered
 from ajax.decorators import json_response
+from ajax.compat import import_module
 import ajax
 
 
@@ -44,7 +42,7 @@ def endpoint_loader(request, application, model, **kwargs):
 
     try:
         module = import_module('%s.endpoints' % application)
-    except ImportError, e:
+    except ImportError as e:
         if settings.DEBUG:
             raise e
         else:
