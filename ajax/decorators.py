@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 from django.utils.translation import ugettext as _
-from django.utils.log import getLogger
+from ajax.compat import getLogger
 from django.http import Http404
 from django.conf import settings
 from decorator import decorator

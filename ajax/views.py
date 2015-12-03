@@ -4,7 +4,7 @@ import json
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from django.utils.log import getLogger
+from ajax.compat import getLogger
 from django.core.serializers.json import DjangoJSONEncoder
 from ajax.exceptions import AJAXError, NotRegistered
 from ajax.decorators import json_response

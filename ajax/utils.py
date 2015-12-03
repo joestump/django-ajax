@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import sys
 
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.importlib import import_module
+from ajax.compat import import_module
 
 
 def import_by_path(dotted_path, error_prefix=''):
