@@ -1,5 +1,5 @@
-from __future__ import absolute_import
 #!/usr/bin/env python
+from __future__ import absolute_import
 import os, sys
 
 if __name__ == "__main__":
