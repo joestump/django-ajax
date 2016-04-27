@@ -2,13 +2,25 @@ language: python
 notifications:
   email: false
 env:
-- DJANGO_VERSION=1.4
-- DJANGO_VERSION=1.5
-- DJANGO_VERSION=1.6
+- DJANGO_VERSION=1.7.0
+- DJANGO_VERSION=1.8.0
+- DJANGO_VERSION=1.9.0
 python:
-- '2.6'
 - '2.7'
+- '3.2'
+- '3.3'
+- '3.4'
+- '3.5'
 install:
-- pip install -r ci.txt Django==$DJANGO_VERSION
+- pip install -r ci.txt django~=$DJANGO_VERSION
 - python setup.py install
-script: make test
+script:
+- make test
+matrix:
+  exclude:
+    - python: '3.5'
+      env: DJANGO_VERSION=1.7.0
+    - python: '3.2'
+      env: DJANGO_VERSION=1.9.0
+    - python: '3.3'
+      env: DJANGO_VERSION=1.9.0

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import models
@@ -11,6 +12,7 @@ from ajax.exceptions import AJAXError, AlreadyRegistered, NotRegistered
 from ajax.encoders import encoder
 from ajax.signals import ajax_created, ajax_deleted, ajax_updated
 from ajax.views import EnvelopedResponse
+import six
 
 try:
     from taggit.utils import parse_tags
@@ -126,7 +128,7 @@ class ModelEndpoint(object):
             record.full_clean()
             record.save()
             return record
-        except ValidationError, e:
+        except ValidationError as e:
             raise AJAXError(400, _("Could not save model."),
                 errors=e.message_dict)
 
@@ -136,7 +138,7 @@ class ModelEndpoint(object):
         modified = self._get_record()
 
         update_record = False
-        for key, val in self._extract_data(request).iteritems():
+        for key, val in six.iteritems(self._extract_data(request)):
 
             # Only setattr and save the model when a change has happened.
             if val != getattr(record, key):
@@ -192,7 +194,7 @@ class ModelEndpoint(object):
         if raw_tags:
             try:
                 tags = [t for t in parse_tags(raw_tags) if len(t)]
-            except Exception, e:
+            except Exception as e:
                 pass
 
         return tags
@@ -208,7 +210,7 @@ class ModelEndpoint(object):
         load up that record.
         """
         data = {}
-        for field, val in request.POST.iteritems():
+        for field, val in six.iteritems(request.POST):
             if field in self.immutable_fields:
                 continue  # Ignore immutable fields silently.
 

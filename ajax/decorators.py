@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 from django.utils.translation import ugettext as _
-from django.utils.log import getLogger
+from ajax.compat import getLogger
 from django.http import Http404
 from django.conf import settings
 from decorator import decorator
@@ -61,7 +62,7 @@ def json_response(f, *args, **kwargs):
         result = f(*args, **kwargs)
         if isinstance(result, AJAXError):
             raise result
-    except AJAXError, e:
+    except AJAXError as e:
         result = e.get_response()
 
         request = args[0]
@@ -72,9 +73,9 @@ def json_response(f, *args, **kwargs):
                 'request': request
             }
         )
-    except Http404, e:
+    except Http404 as e:
         result = AJAXError(404, e.__str__()).get_response()
-    except Exception, e:
+    except Exception as e:
         import sys
         exc_info = sys.exc_info()
         type, message, trace = exc_info
