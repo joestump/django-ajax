@@ -15,7 +15,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'decorator',
-        'django-appconf==1.0.2',
+        'django-appconf==0.6',
     ],
     extras_require={
         'Tagging': ['taggit']
