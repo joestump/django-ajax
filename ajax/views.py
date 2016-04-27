@@ -6,15 +6,15 @@ except ImportError:
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from django.utils.importlib import import_module
-from django.utils.log import getLogger
 from django.core.serializers.json import DjangoJSONEncoder
 from ajax.exceptions import AJAXError, NotRegistered
 from ajax.decorators import json_response
+from ajax.compat import path_to_import
 import ajax
+import logging
 
 
-logger = getLogger('django.request')
+logger = logging.getLogger('django.request')
 
 
 class EnvelopedResponse(object):
@@ -43,7 +43,7 @@ def endpoint_loader(request, application, model, **kwargs):
         raise AJAXError(400, _('Invalid HTTP method used.'))
 
     try:
-        module = import_module('%s.endpoints' % application)
+        module = path_to_import('%s.endpoints' % application)
     except ImportError, e:
         if settings.DEBUG:
             raise e

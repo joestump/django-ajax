@@ -1,14 +1,14 @@
 from django.utils.translation import ugettext as _
-from django.utils.log import getLogger
 from django.http import Http404
 from django.conf import settings
 from decorator import decorator
 from ajax.exceptions import AJAXError, PrimaryKeyMissing
 from functools import wraps
 from django.utils.decorators import available_attrs
+import logging
 
 
-logger = getLogger('django.request')
+logger = logging.getLogger('django.request')
 
 
 @decorator
