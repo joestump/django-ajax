@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 from django.core import serializers
 from ajax.exceptions import AlreadyRegistered, NotRegistered
 from django.db.models.fields import FieldDoesNotExist
@@ -7,6 +8,7 @@ from django.utils.html import escape
 from django.db.models.query import QuerySet
 from django.utils.encoding import smart_str
 import collections
+import six
 
 
 # Used to change the field name for the Model's pk.
@@ -45,7 +47,7 @@ class DefaultEncoder(object):
         ret.update(data['fields'])
         ret[AJAX_PK_ATTR_NAME] = data['pk']
 
-        for field, val in ret.iteritems():
+        for field, val in six.iteritems(ret):
             try:
                 f = record.__class__._meta.get_field(field)
                 if expand and isinstance(f, models.ForeignKey):
@@ -58,7 +60,7 @@ class DefaultEncoder(object):
                     new_value = self._encode_value(f, val)
 
                 ret[smart_str(field)] = new_value
-            except FieldDoesNotExist, e:
+            except FieldDoesNotExist as e:
                 pass  # Assume extra fields are already safe.
                   
         if expand and hasattr(record, 'tags') and \

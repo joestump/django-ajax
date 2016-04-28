@@ -3,3 +3,6 @@
 *.egg
 *.egg-info
 *.sqlite3
+env/
+py3env/
+.idea/

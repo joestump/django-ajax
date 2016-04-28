@@ -1,9 +1,10 @@
+from __future__ import absolute_import
 from setuptools import setup, find_packages
 
 
 setup(
     name='ajax',
-    version='2.0.0',
+    version='3.0.0',
     description='A simple framework for creating AJAX endpoints in Django.',
     long_description='',
     keywords='django, ajax',
@@ -15,7 +16,7 @@ setup(
     zip_safe=False,
     install_requires=[
         'decorator',
-        'django-appconf==0.6',
+        'django-appconf>=1.0.0,<1.1',
     ],
     extras_require={
         'Tagging': ['taggit']
