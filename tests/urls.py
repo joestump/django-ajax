@@ -1,7 +1,15 @@
 from __future__ import absolute_import
-from django.conf.urls import patterns, include, url
+import django
+try:
+    from django.conf.urls import patterns, include, url
+except ImportError:
+    from django.conf.urls import include, url
 
-
-urlpatterns = patterns('',
-    url(r'^ajax/', include('ajax.urls')),
-)
+if django.VERSION < (1, 8):
+    urlpatterns = patterns('',
+        url(r'^ajax/', include('ajax.urls')),
+    )
+else:
+    urlpatterns = [
+        url(r'^ajax/', include('ajax.urls'))
+    ]
